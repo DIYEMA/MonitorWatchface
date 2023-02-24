@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="main_text_size">18dp</dimen>
+    <dimen name="supporting_text_size">9dp</dimen>
+    <dimen name="text_padding">12dp</dimen>
+    <dimen name="progress_width">5dp</dimen>
+    <dimen name="progress_margin">2dp</dimen>
+    <dimen name="icon_margin">40dp</dimen>
+</resources>

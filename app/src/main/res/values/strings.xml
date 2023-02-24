@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">MonitorWatchface</string>
+    <string name="message">Watch face tapped</string>
+    <string name="my_analog_name">Test</string>
+    <string name="background">background</string>
+    <string name="test">TEST</string>
+</resources>
