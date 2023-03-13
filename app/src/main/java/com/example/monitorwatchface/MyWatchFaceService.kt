@@ -6,8 +6,9 @@ import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.support.wearable.watchface.CanvasWatchFaceService
-import android.view.SurfaceHolder
-import android.view.WindowInsets
+import android.util.Log
+import android.view.*
+import android.widget.*
 import com.google.android.gms.wearable.*
 import java.lang.Float.min
 import java.text.DateFormat
@@ -24,10 +25,11 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     private lateinit var fatigueBackgroundPaint: Paint
     private val backgroundColor = Color.parseColor("#3E3939")
     private var currentTime = Calendar.getInstance()
-    private var mood = 10
+    private var fatigue = 4
+    private var mood = 3
+    private var hr = 0
 
     override fun onCreateEngine(): Engine {
-        val context = applicationContext
 
         mainTextPaint = Paint().apply {
             color = Color.WHITE
@@ -77,14 +79,31 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             isAntiAlias = true
         }
 
-        return MyEngine(context)
+        return MyEngine()
     }
 
-    private inner class MyEngine(context: Context) : Engine() {
-        private val stepsIcon: Drawable = context.getDrawable(R.drawable.steps_icon)!!
-        private val heartIcon: Drawable = context.getDrawable(R.drawable.heart_icon)!!
-        private var fatigueIcon: Drawable = context.getDrawable(R.drawable.default_icon)!!
-        private var moodIcon: Drawable = context.getDrawable(R.drawable.default_icon)!!
+    private inner class MyEngine : Engine() {
+
+        private val stepsIcon: Drawable = applicationContext.getDrawable(R.drawable.steps_icon)!!
+        private val heartIcon: Drawable = applicationContext.getDrawable(R.drawable.heart_icon)!!
+        private var fatigueIcon: Drawable = applicationContext.getDrawable(R.drawable.default_icon)!!
+        private var moodIcon: Drawable = applicationContext.getDrawable(R.drawable.default_icon)!!
+
+        private lateinit var fatigueView: MyCustomView
+        private lateinit var moodView: MyCustomView
+
+        override fun onCreate(surfaceHolder: SurfaceHolder) {
+            super.onCreate(surfaceHolder)
+            fatigueView = MyCustomView(this@MyWatchFaceService)
+            moodView = MyCustomView(this@MyWatchFaceService)
+            setTouchEventsEnabled(true)
+        }
+
+        override fun onTouchEvent(event: MotionEvent) {
+            super.onTouchEvent(event)
+            fatigueView.onTouchEvent(event)
+            moodView.onTouchEvent(event)
+        }
 
         @SuppressLint("Range")
         override fun onDraw(canvas: Canvas, bounds: Rect) {
@@ -93,7 +112,13 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             val uri = Uri.parse("content://com.example.fatiguemonitor.provider/preferences")
             val cursor = contentResolver.query(uri, null, null, null, null)
             if (cursor != null && cursor.moveToFirst()) {
-                mood = cursor.getInt(cursor.getColumnIndex("value"))
+                fatigue = cursor.getInt(cursor.getColumnIndex("value"))
+                if (cursor.moveToNext()) {
+                    mood = cursor.getInt(cursor.getColumnIndex("value"))
+                }
+                if (cursor.moveToNext()) {
+                    hr = cursor.getInt(cursor.getColumnIndex("value"))
+                }
             }
             cursor?.close()
 
@@ -158,20 +183,22 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             canvas.drawText(heartRateText, heartRateTextX, heartRateTextY, supportingTextPaint)
 
             // Draw the heart rate count
-            val heartRateCount = "0 BPM"
+            val heartRateCount = "$hr BPM"
             val heartRateCountX = bounds.exactCenterX() + resources.getDimension(R.dimen.icon_margin) + (heartIconWidth / 2)
             val heartRateCountY = heartIconTop + heartIconHeight + supportingTextPaint.textSize
             canvas.drawText(heartRateCount, heartRateCountX, heartRateCountY, supportingTextPaint)
 
-            // Draw the fatigue icon
+            // Draw the fatigue icon and it's clickable background
+            fatigueView.draw(canvas)
+
             val fatigueIconWidth = 50f
             val fatigueIconHeight = 70f
             val fatigueIconLeft = bounds.exactCenterX() - (fatigueIconWidth / 2)
             val fatigueIconTop = bounds.exactCenterY() - (resources.getDimension(R.dimen.icon_margin) / 1.1) - fatigueIconHeight
             fatigueIcon.setBounds(fatigueIconLeft.toInt(), fatigueIconTop.toInt(),
-                (fatigueIconLeft + fatigueIconWidth).toInt(), (fatigueIconTop + fatigueIconHeight).toInt()
-            )
+                (fatigueIconLeft + fatigueIconWidth).toInt(), (fatigueIconTop + fatigueIconHeight).toInt())
             fatigueIcon.draw(canvas)
+
 
             // Draw the fatigue text
             val fatigueText = "Fatigue"
@@ -179,7 +206,11 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             val fatigueTextY = fatigueIconTop - (supportingTextPaint.textSize / 4)
             canvas.drawText(fatigueText, fatigueTextX, fatigueTextY.toFloat(), supportingTextPaint)
 
-            // Draw the mood icon
+            // Draw the mood icon and it's clickable background (with new position and activity)
+            moodView.setIconPosition(140f, 235f, 220f, 335f)
+            moodView.setActivity("com.example.fatiguemonitor.presentation.MoodSeekBarActivity")
+            moodView.draw(canvas)
+
             val moodIconWidth = 68f
             val moodIconHeight = 85f
             val moodIconLeft = bounds.exactCenterX() - (moodIconWidth / 2)
@@ -200,7 +231,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             val centerY = bounds.exactCenterY()
             val radius = min(centerX, centerY) - resources.getDimension(R.dimen.progress_margin)
             val rectF = RectF(centerX - radius, centerY - radius, centerX + radius, centerY + radius)
-            canvas.drawArc(rectF, 225f, 22.5f, false, fatigueForegroundPaint)
+            canvas.drawArc(rectF, 225f, (18 * (fatigue + 1)).toFloat(), false, fatigueForegroundPaint)
             canvas.drawArc(rectF, 225f, 90f, false, fatigueBackgroundPaint)
             canvas.drawArc(rectF, 45f, (18 * (mood + 1)).toFloat(), false, moodForegroundPaint)
             canvas.drawArc(rectF, 45f, 90f, false, moodBackgroundPaint)
@@ -243,28 +274,36 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         }
 
         private fun dynamicChange(context: Context) {
-            when (mood) {
-                0 -> { moodIcon = context.getDrawable(R.drawable.very_sad)!!
-                    moodForegroundPaint.color = Color.parseColor("#EE2C37")
-                    moodBackgroundPaint.color = Color.parseColor("#EE2C37")
-                    moodBackgroundPaint.alpha = 128 }
-                1 -> { moodIcon = context.getDrawable(R.drawable.sad)!!
-                    moodForegroundPaint.color = Color.parseColor("#F36831")
-                    moodBackgroundPaint.color = Color.parseColor("#F36831")
-                    moodBackgroundPaint.alpha = 128 }
-                2 -> { moodIcon = context.getDrawable(R.drawable.moderate)!!
-                    moodForegroundPaint.color = Color.parseColor("#FCD90E")
-                    moodBackgroundPaint.color = Color.parseColor("#FCD90E")
-                    moodBackgroundPaint.alpha = 128 }
-                3 -> { moodIcon = context.getDrawable(R.drawable.happy)!!
-                    moodForegroundPaint.color = Color.parseColor("#9CCC3C")
-                    moodBackgroundPaint.color = Color.parseColor("#9CCC3C")
-                    moodBackgroundPaint.alpha = 128 }
-                else -> { moodIcon = context.getDrawable(R.drawable.very_happy)!!
-                    moodForegroundPaint.color = Color.parseColor("#46B648")
-                    moodBackgroundPaint.color = Color.parseColor("#46B648")
-                    moodBackgroundPaint.alpha = 128 }
-            }
+            data class State(val icon: Int, val colour: String)
+
+            val moodStates = listOf(
+                State(R.drawable.very_sad, "#EE2C37"),
+                State(R.drawable.sad, "#F36831"),
+                State(R.drawable.moderate, "#FCD90E"),
+                State(R.drawable.happy, "#9CCC3C"),
+                State(R.drawable.very_happy, "#46B648")
+            )
+
+            val fatigueStates = listOf(
+                State(R.drawable.very_tired2, "#EE2C37"),
+                State(R.drawable.tired2, "#F36831"),
+                State(R.drawable.moderately_tired2, "#FCD90E"),
+                State(R.drawable.energetic2, "#9CCC3C"),
+                State(R.drawable.very_energetic2, "#46B648")
+            )
+
+            val moodState = moodStates.getOrElse(mood) { moodStates.last() }
+            val fatigueState = fatigueStates.getOrElse(fatigue) { fatigueStates.last() }
+
+            moodIcon = context.getDrawable(moodState.icon)!!
+            moodForegroundPaint.color = Color.parseColor(moodState.colour)
+            moodBackgroundPaint.color = Color.parseColor(moodState.colour)
+            moodBackgroundPaint.alpha = 128
+
+            fatigueIcon = context.getDrawable(fatigueState.icon)!!
+            fatigueForegroundPaint.color = Color.parseColor(fatigueState.colour)
+            fatigueBackgroundPaint.color = Color.parseColor(fatigueState.colour)
+            fatigueBackgroundPaint.alpha = 128
         }
     }
 }
