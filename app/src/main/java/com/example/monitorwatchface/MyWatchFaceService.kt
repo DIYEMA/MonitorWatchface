@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.BatteryManager
 import android.support.wearable.watchface.CanvasWatchFaceService
 import android.util.Log
 import android.view.*
@@ -17,12 +18,19 @@ import java.util.*
 
 class MyWatchFaceService : CanvasWatchFaceService() {
 
+    companion object {
+        // Increase the timeout duration to 10 seconds (in milliseconds)
+        private const val TIMEOUT_DURATION = 10000L
+    }
+
     private lateinit var mainTextPaint: Paint
     private lateinit var supportingTextPaint: Paint
-    private lateinit var moodForegroundPaint: Paint
-    private lateinit var moodBackgroundPaint: Paint
-    private lateinit var fatigueForegroundPaint: Paint
     private lateinit var fatigueBackgroundPaint: Paint
+    private lateinit var fatigueForegroundPaint: Paint
+    private lateinit var moodBackgroundPaint: Paint
+    private lateinit var moodForegroundPaint: Paint
+    private lateinit var batteryBackgroundPaint: Paint
+    private lateinit var batteryForegroundPaint: Paint
     private val backgroundColor = Color.parseColor("#3E3939")
     private var currentTime = Calendar.getInstance()
     private var fatigue = 4
@@ -45,15 +53,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             textAlign = Paint.Align.CENTER
         }
 
-        moodForegroundPaint = Paint().apply {
-            color = Color.WHITE
-            strokeWidth = resources.getDimension(R.dimen.progress_width)
-            style = Paint.Style.STROKE
-            strokeCap = Paint.Cap.ROUND
-            isAntiAlias = true
-        }
-
-        moodBackgroundPaint = Paint().apply {
+        fatigueBackgroundPaint = Paint().apply {
             color = Color.WHITE
             strokeWidth = resources.getDimension(R.dimen.progress_width)
             style = Paint.Style.STROKE
@@ -70,12 +70,37 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             isAntiAlias = true
         }
 
-        fatigueBackgroundPaint = Paint().apply {
+        moodBackgroundPaint = Paint().apply {
             color = Color.WHITE
             strokeWidth = resources.getDimension(R.dimen.progress_width)
             style = Paint.Style.STROKE
             strokeCap = Paint.Cap.ROUND
             alpha = 128
+            isAntiAlias = true
+        }
+
+        moodForegroundPaint = Paint().apply {
+            color = Color.WHITE
+            strokeWidth = resources.getDimension(R.dimen.progress_width)
+            style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND
+            isAntiAlias = true
+        }
+
+        batteryBackgroundPaint = Paint().apply {
+            color = Color.parseColor("#2196F3")
+            strokeWidth = resources.getDimension(R.dimen.progress_width) / 2
+            style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND
+            alpha = 128
+            isAntiAlias = true
+        }
+
+        batteryForegroundPaint = Paint().apply {
+            color = Color.parseColor("#2196F3")
+            strokeWidth = resources.getDimension(R.dimen.progress_width) / 2
+            style = Paint.Style.STROKE
+            strokeCap = Paint.Cap.ROUND
             isAntiAlias = true
         }
 
@@ -97,17 +122,27 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             fatigueView = MyCustomView(this@MyWatchFaceService)
             moodView = MyCustomView(this@MyWatchFaceService)
             setTouchEventsEnabled(true)
+            Log.d("test", "onCreate")
+        }
+
+        override fun onDestroy() {
+            super.onDestroy()
+            fatigueView.toggleClickable(false)
+            moodView.toggleClickable(false)
+            Log.d("test", "onDestroy")
         }
 
         override fun onTouchEvent(event: MotionEvent) {
             super.onTouchEvent(event)
             fatigueView.onTouchEvent(event)
             moodView.onTouchEvent(event)
+            Log.d("test", "onTouchEvent")
         }
 
         @SuppressLint("Range")
         override fun onDraw(canvas: Canvas, bounds: Rect) {
             super.onDraw(canvas, bounds)
+            Log.d("test", "onDraw")
 
             val uri = Uri.parse("content://com.example.fatiguemonitor.provider/preferences")
             val cursor = contentResolver.query(uri, null, null, null, null)
@@ -148,7 +183,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             val stepsIconWidth = 60f
             val stepsIconHeight = 60f
             val stepsIconLeft = bounds.exactCenterX() - resources.getDimension(R.dimen.icon_margin) - stepsIconWidth
-            val stepsIconTop = bounds.exactCenterY() - (stepsIconHeight / 2)
+            val stepsIconTop = bounds.exactCenterY() + (stepsIconHeight / 3)
             stepsIcon.setBounds(stepsIconLeft.toInt(), stepsIconTop.toInt(),
                 (stepsIconLeft + stepsIconWidth).toInt(), (stepsIconTop + stepsIconHeight).toInt()
             )
@@ -170,7 +205,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             val heartIconWidth = 60f
             val heartIconHeight = 60f
             val heartIconLeft = bounds.exactCenterX() + resources.getDimension(R.dimen.icon_margin)
-            val heartIconTop = bounds.exactCenterY() - (heartIconHeight / 2)
+            val heartIconTop = bounds.exactCenterY() + (heartIconHeight / 3)
             heartIcon.setBounds(heartIconLeft.toInt(), heartIconTop.toInt(),
                 (heartIconLeft + heartIconWidth).toInt(), (heartIconTop + heartIconHeight).toInt()
             )
@@ -193,28 +228,30 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
             val fatigueIconWidth = 50f
             val fatigueIconHeight = 70f
-            val fatigueIconLeft = bounds.exactCenterX() - (fatigueIconWidth / 2)
-            val fatigueIconTop = bounds.exactCenterY() - (resources.getDimension(R.dimen.icon_margin) / 1.1) - fatigueIconHeight
+//            val fatigueIconWidth = 60f
+//            val fatigueIconHeight = 60f
+            val fatigueIconLeft = (bounds.exactCenterX() - resources.getDimension(R.dimen.icon_margin)) * 0.8
+            val fatigueIconTop = (bounds.exactCenterY() - (resources.getDimension(R.dimen.icon_margin) / 2)) - fatigueIconHeight - 10f
             fatigueIcon.setBounds(fatigueIconLeft.toInt(), fatigueIconTop.toInt(),
                 (fatigueIconLeft + fatigueIconWidth).toInt(), (fatigueIconTop + fatigueIconHeight).toInt())
             fatigueIcon.draw(canvas)
 
-
             // Draw the fatigue text
             val fatigueText = "Fatigue"
-            val fatigueTextX = bounds.exactCenterX()
+            val fatigueTextX = ((bounds.exactCenterX() - resources.getDimension(R.dimen.icon_margin)) * 0.8) + (fatigueIconWidth / 2)
             val fatigueTextY = fatigueIconTop - (supportingTextPaint.textSize / 4)
-            canvas.drawText(fatigueText, fatigueTextX, fatigueTextY.toFloat(), supportingTextPaint)
+            canvas.drawText(fatigueText,
+                fatigueTextX.toFloat(), fatigueTextY, supportingTextPaint)
 
             // Draw the mood icon and it's clickable background (with new position and activity)
-            moodView.setIconPosition(140f, 235f, 220f, 335f)
+            moodView.setIconPosition(215f, 85f, 295f, 120f)
             moodView.setActivity("com.example.fatiguemonitor.presentation.MoodSeekBarActivity")
             moodView.draw(canvas)
 
-            val moodIconWidth = 68f
+            val moodIconWidth = 70f
             val moodIconHeight = 85f
-            val moodIconLeft = bounds.exactCenterX() - (moodIconWidth / 2)
-            val moodIconTop = bounds.exactCenterY() + (resources.getDimension(R.dimen.icon_margin) / 1.1)
+            val moodIconLeft = (bounds.exactCenterX() + resources.getDimension(R.dimen.icon_margin)) * 0.8 + 20f
+            val moodIconTop = (bounds.exactCenterY() - (resources.getDimension(R.dimen.icon_margin) / 2)) - fatigueIconHeight - 15f
             moodIcon.setBounds(moodIconLeft.toInt(), moodIconTop.toInt(),
                 (moodIconLeft + moodIconWidth).toInt(), (moodIconTop + moodIconHeight).toInt()
             )
@@ -222,55 +259,77 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
             // Draw the mood text
             val moodText = "Mood"
-            val moodTextX = bounds.exactCenterX()
-            val moodTextY = moodIconTop + moodIconHeight + (supportingTextPaint.textSize / 4)
-            canvas.drawText(moodText, moodTextX, moodTextY.toFloat(), supportingTextPaint)
+            val moodTextX = (bounds.exactCenterX() + resources.getDimension(R.dimen.icon_margin)) * 0.8 + 55f
+            canvas.drawText(moodText, moodTextX.toFloat(), moodIconTop, supportingTextPaint)
 
-            // Draw the progress ring
+            // Draw the fatigue and mood progress rings
             val centerX = bounds.exactCenterX()
             val centerY = bounds.exactCenterY()
             val radius = min(centerX, centerY) - resources.getDimension(R.dimen.progress_margin)
             val rectF = RectF(centerX - radius, centerY - radius, centerX + radius, centerY + radius)
-            canvas.drawArc(rectF, 225f, (18 * (fatigue + 1)).toFloat(), false, fatigueForegroundPaint)
-            canvas.drawArc(rectF, 225f, 90f, false, fatigueBackgroundPaint)
-            canvas.drawArc(rectF, 45f, (18 * (mood + 1)).toFloat(), false, moodForegroundPaint)
-            canvas.drawArc(rectF, 45f, 90f, false, moodBackgroundPaint)
+            canvas.drawArc(rectF, 180f, 85f, false, fatigueBackgroundPaint)
+            canvas.drawArc(rectF, 180f, (17 * (fatigue + 1)).toFloat(), false, fatigueForegroundPaint)
+            canvas.drawArc(rectF, 275f, 85f, false, moodBackgroundPaint)
+            canvas.drawArc(rectF, 275f, (17 * (mood + 1)).toFloat(), false, moodForegroundPaint)
+
+            // Draw the battery progress ring
+            val batteryManager = getSystemService(BATTERY_SERVICE) as BatteryManager
+            val batteryLevel = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+            val batteryCount = "$batteryLevel%"
+            canvas.drawText(batteryCount, bounds.exactCenterX(),
+                bounds.exactCenterY() + (resources.getDimension(R.dimen.icon_margin) * 1.9f),
+                supportingTextPaint)
+
+            val circleRadius = 30f
+            val circleY = bounds.exactCenterY() + (resources.getDimension(R.dimen.icon_margin) * 1.9f) - (supportingTextPaint.textSize / 2)
+            val circleRectF = RectF(bounds.centerX() - circleRadius, circleY - circleRadius,
+                bounds.centerX() + circleRadius, circleY + circleRadius)
+            canvas.drawCircle(circleRectF.centerX(), circleRectF.centerY(), circleRadius, batteryBackgroundPaint)
+            canvas.drawArc(circleRectF, -90f, (batteryLevel.toFloat() / 100f) * 360f, false, batteryForegroundPaint)
+
+            // Draw the battery text
+            val batteryText = "Power"
+            val batteryTextX = bounds.exactCenterX()
+            val batteryTextY = circleRectF.top - (supportingTextPaint.textSize * 0.5)
+            canvas.drawText(batteryText, batteryTextX, batteryTextY.toFloat(), supportingTextPaint)
         }
 
         override fun onTimeTick() {
             super.onTimeTick()
             currentTime = Calendar.getInstance()
             invalidate()
+            Log.d("test", "onTimeTick")
         }
 
         override fun onAmbientModeChanged(inAmbientMode: Boolean) {
             if (inAmbientMode) {
                 mainTextPaint.color = Color.GRAY
-//                progressPaint.color = Color.WHITE
+                fatigueView.toggleClickable(false)
+                moodView.toggleClickable(false)
             } else {
                 mainTextPaint.color = Color.WHITE
-//                progressPaint.color = Color.BLUE
+                fatigueView.toggleClickable(true)
+                moodView.toggleClickable(true)
             }
             invalidate()
+            Log.d("test", "onAmbientModeChanged")
         }
 
         override fun onVisibilityChanged(visible: Boolean) {
             super.onVisibilityChanged(visible)
-            if (visible) {
-                // Register sensors
-            } else {
-                // Unregister sensors
-            }
+            fatigueView.toggleClickable(visible)
+            moodView.toggleClickable(visible)
+            Log.d("test", "onVisibilityChanged")
         }
 
         override fun onSurfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
             super.onSurfaceChanged(holder, format, width, height)
             // Adjust the watch face layout here if necessary
+            Log.d("test", "onSurfaceChanged")
         }
 
         override fun onApplyWindowInsets(insets: WindowInsets) {
             super.onApplyWindowInsets(insets)
-            // Adjust the watch face layout based on the given insets here
         }
 
         private fun dynamicChange(context: Context) {
@@ -289,7 +348,12 @@ class MyWatchFaceService : CanvasWatchFaceService() {
                 State(R.drawable.tired2, "#F36831"),
                 State(R.drawable.moderately_tired2, "#FCD90E"),
                 State(R.drawable.energetic2, "#9CCC3C"),
-                State(R.drawable.very_energetic2, "#46B648")
+                State(R.drawable.very_energetic2, "#46B648"),
+//                State(R.drawable.very_tired3, "#EE2C37"),
+//                State(R.drawable.tired3, "#F36831"),
+//                State(R.drawable.moderately_tired3, "#FCD90E"),
+//                State(R.drawable.energetic3, "#9CCC3C"),
+//                State(R.drawable.very_energetic3, "#46B648")
             )
 
             val moodState = moodStates.getOrElse(mood) { moodStates.last() }
