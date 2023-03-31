@@ -10,11 +10,16 @@ import android.support.wearable.watchface.CanvasWatchFaceService
 import android.util.Log
 import android.view.*
 import android.widget.*
+import androidx.work.OneTimeWorkRequest
+import androidx.work.PeriodicWorkRequest
+import androidx.work.WorkManager
 import com.google.android.gms.wearable.*
 import java.lang.Float.min
 import java.text.DateFormat
 import java.text.DateFormat.getTimeInstance
 import java.util.*
+import java.util.concurrent.TimeUnit
+
 
 class MyWatchFaceService : CanvasWatchFaceService() {
 
@@ -33,9 +38,10 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     private lateinit var batteryForegroundPaint: Paint
     private val backgroundColor = Color.parseColor("#3E3939")
     private var currentTime = Calendar.getInstance()
-    private var fatigue = 4
+    private var fatigue = 0
     private var mood = 3
     private var hr = 0
+    private var steps = 0
 
     override fun onCreateEngine(): Engine {
 
@@ -157,6 +163,13 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             }
             cursor?.close()
 
+            val stepsUri = Uri.parse("content://com.mobvoi.ticwear.steps")
+            val stepsCursor = contentResolver.query(stepsUri, null, null, null, null)
+            if (stepsCursor != null && stepsCursor.moveToFirst()) {
+                steps = stepsCursor.getInt(0)
+            }
+            stepsCursor?.close()
+
             dynamicChange(applicationContext)
 
             // Draw the background color
@@ -195,8 +208,10 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             val stepsCountTextY = stepsIconTop - (supportingTextPaint.textSize / 4)
             canvas.drawText(stepsCountText, stepsCountTextX, stepsCountTextY, supportingTextPaint)
 
-            // Draw the steps count
-            val stepsCount = "0"
+            // Draw the steps
+//            val sharedPreferences = getSharedPreferences("preferences", Context.MODE_PRIVATE)
+//            steps = sharedPreferences.getInt("steps", 0)
+            val stepsCount = "$steps"
             val stepsCountX = bounds.exactCenterX() - resources.getDimension(R.dimen.icon_margin) - (stepsIconWidth / 2)
             val stepsCountY = stepsIconTop + stepsIconHeight + supportingTextPaint.textSize
             canvas.drawText(stepsCount, stepsCountX, stepsCountY, supportingTextPaint)
@@ -369,6 +384,58 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             fatigueBackgroundPaint.color = Color.parseColor(fatigueState.colour)
             fatigueBackgroundPaint.alpha = 128
         }
+
+        private fun readStepCount() {
+            // Schedule the one time work
+            val oneTimeWorkRequest = OneTimeWorkRequest.Builder(
+                StepsWorker::class.java
+            ).addTag("StepsWorker").build()
+            WorkManager.getInstance(applicationContext).enqueue(oneTimeWorkRequest)
+            Log.d("test", "logged steps")
+        }
+
+//            Log.i("test", "in")
+//
+//            val startTime = LocalDate.now().atStartOfDay(ZoneId.systemDefault())
+//            val endTime = LocalDateTime.now().atZone(ZoneId.systemDefault())
+//
+//            val datasource = DataSource.Builder()
+//                .setAppPackageName("com.google.android.gms")
+//                .setDataType(DataType.TYPE_STEP_COUNT_DELTA)
+//                .setType(DataSource.TYPE_DERIVED)
+//                .setStreamName("estimated_steps")
+//                .build()
+//
+//            Log.i("test", "in2")
+//
+//            val request = DataReadRequest.Builder()
+//                .aggregate(datasource)
+//                .bucketByTime(1, TimeUnit.DAYS)
+//                .setTimeRange(startTime.toEpochSecond(), endTime.toEpochSecond(), TimeUnit.SECONDS)
+//                .build()
+//
+//            Log.i("test", "in3")
+//
+//            val fitnessOptions = FitnessOptions.builder()
+//                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+//                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+//                .build()
+//
+//            Log.i("test", "in4")
+//
+//            Fitness.getHistoryClient(this@MyWatchFaceService,
+//                GoogleSignIn.getAccountForExtension(applicationContext, fitnessOptions))
+//                .readData(request)
+//                .addOnSuccessListener { response ->
+//                    val totalSteps = response.buckets
+//                        .flatMap { it.dataSets }
+//                        .flatMap { it.dataPoints }
+//                        .sumBy { it.getValue(Field.FIELD_STEPS).asInt() }
+//                    Log.i("test", "Total steps: $totalSteps")
+//                }
+//                .addOnFailureListener { e ->
+//                    Log.e("test", "Error reading steps", e)
+//                }
     }
 }
 

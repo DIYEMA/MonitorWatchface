@@ -16,7 +16,7 @@ class MyCustomView(context: Context) : View(context) {
     private val mPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var mIconRect = RectF(77.5f, 10f, 150f, 200f)
     private var mPackageName = "com.example.fatiguemonitor"
-    private var mActivityName = "com.example.fatiguemonitor.presentation.EnergySeekBarActivity"
+    private var mActivityName = "com.example.fatiguemonitor.presentation.EnergySliderActivity"
 
     init {
         mPaint.style = Paint.Style.FILL
