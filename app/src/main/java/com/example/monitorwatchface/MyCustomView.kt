@@ -16,7 +16,7 @@ class MyCustomView(context: Context) : View(context) {
     private val mPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var mIconRect = RectF(77.5f, 10f, 150f, 200f)
     private var mPackageName = "com.example.fatiguemonitor"
-    private var mActivityName = "com.example.fatiguemonitor.presentation.EnergySliderActivity"
+    private var mActivityName = "com.example.fatiguemonitor.presentation.EnergySeekBarActivity"
 
     init {
         mPaint.style = Paint.Style.FILL
@@ -54,8 +54,7 @@ class MyCustomView(context: Context) : View(context) {
                         if (mIconRect.contains(event.x, event.y)) {
                             val intent = Intent().apply {
                                 setClassName(mPackageName, mActivityName)
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                             }
                             context.startActivity(intent)
                         }

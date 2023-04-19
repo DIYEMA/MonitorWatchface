@@ -10,15 +10,11 @@ import android.support.wearable.watchface.CanvasWatchFaceService
 import android.util.Log
 import android.view.*
 import android.widget.*
-import androidx.work.OneTimeWorkRequest
-import androidx.work.PeriodicWorkRequest
-import androidx.work.WorkManager
 import com.google.android.gms.wearable.*
 import java.lang.Float.min
 import java.text.DateFormat
 import java.text.DateFormat.getTimeInstance
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 
 class MyWatchFaceService : CanvasWatchFaceService() {
@@ -39,9 +35,13 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     private val backgroundColor = Color.parseColor("#3E3939")
     private var currentTime = Calendar.getInstance()
     private var fatigue = 0
-    private var mood = 3
+    private var mood = 0
     private var hr = 0
     private var steps = 0
+
+    private var fatigueMedium = 0
+    private var fatigueImage = 0
+    private var moodMedium = 0
 
     override fun onCreateEngine(): Engine {
 
@@ -160,6 +160,15 @@ class MyWatchFaceService : CanvasWatchFaceService() {
                 if (cursor.moveToNext()) {
                     hr = cursor.getInt(cursor.getColumnIndex("value"))
                 }
+                if (cursor.moveToNext()) {
+                    fatigueMedium = cursor.getInt(cursor.getColumnIndex("value"))
+                }
+                if (cursor.moveToNext()) {
+                    fatigueImage = cursor.getInt(cursor.getColumnIndex("value"))
+                }
+                if (cursor.moveToNext()) {
+                    moodMedium = cursor.getInt(cursor.getColumnIndex("value"))
+                }
             }
             cursor?.close()
 
@@ -209,8 +218,6 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             canvas.drawText(stepsCountText, stepsCountTextX, stepsCountTextY, supportingTextPaint)
 
             // Draw the steps
-//            val sharedPreferences = getSharedPreferences("preferences", Context.MODE_PRIVATE)
-//            steps = sharedPreferences.getInt("steps", 0)
             val stepsCount = "$steps"
             val stepsCountX = bounds.exactCenterX() - resources.getDimension(R.dimen.icon_margin) - (stepsIconWidth / 2)
             val stepsCountY = stepsIconTop + stepsIconHeight + supportingTextPaint.textSize
@@ -233,12 +240,17 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             canvas.drawText(heartRateText, heartRateTextX, heartRateTextY, supportingTextPaint)
 
             // Draw the heart rate count
+            if (hr < 0) hr = 0
             val heartRateCount = "$hr BPM"
             val heartRateCountX = bounds.exactCenterX() + resources.getDimension(R.dimen.icon_margin) + (heartIconWidth / 2)
             val heartRateCountY = heartIconTop + heartIconHeight + supportingTextPaint.textSize
             canvas.drawText(heartRateCount, heartRateCountX, heartRateCountY, supportingTextPaint)
 
-            // Draw the fatigue icon and it's clickable background
+            // Draw the fatigue icon and it's clickable background (with new activity)
+            if (fatigueMedium == 1) {
+                if (fatigueImage == 0) fatigueView.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity")
+                else fatigueView.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity2")
+            }
             fatigueView.draw(canvas)
 
             val fatigueIconWidth = 50f
@@ -260,7 +272,8 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
             // Draw the mood icon and it's clickable background (with new position and activity)
             moodView.setIconPosition(215f, 85f, 295f, 120f)
-            moodView.setActivity("com.example.fatiguemonitor.presentation.MoodSeekBarActivity")
+            if (moodMedium == 1) moodView.setActivity("com.example.fatiguemonitor.presentation.MoodSliderActivity")
+            else moodView.setActivity("com.example.fatiguemonitor.presentation.MoodSeekBarActivity")
             moodView.draw(canvas)
 
             val moodIconWidth = 70f
@@ -358,21 +371,28 @@ class MyWatchFaceService : CanvasWatchFaceService() {
                 State(R.drawable.very_happy, "#46B648")
             )
 
-            val fatigueStates = listOf(
+            val beanFatigueStates = listOf(
+                State(R.drawable.very_tired, "#EE2C37"),
+                State(R.drawable.tired, "#F36831"),
+                State(R.drawable.moderately_tired, "#FCD90E"),
+                State(R.drawable.energetic, "#9CCC3C"),
+                State(R.drawable.very_energetic, "#46B648"),
+            )
+
+            val batteryFatigueStates = listOf(
                 State(R.drawable.very_tired2, "#EE2C37"),
                 State(R.drawable.tired2, "#F36831"),
                 State(R.drawable.moderately_tired2, "#FCD90E"),
                 State(R.drawable.energetic2, "#9CCC3C"),
                 State(R.drawable.very_energetic2, "#46B648"),
-//                State(R.drawable.very_tired3, "#EE2C37"),
-//                State(R.drawable.tired3, "#F36831"),
-//                State(R.drawable.moderately_tired3, "#FCD90E"),
-//                State(R.drawable.energetic3, "#9CCC3C"),
-//                State(R.drawable.very_energetic3, "#46B648")
             )
 
             val moodState = moodStates.getOrElse(mood) { moodStates.last() }
-            val fatigueState = fatigueStates.getOrElse(fatigue) { fatigueStates.last() }
+            val fatigueState : State = if (fatigueImage == 0) {
+                beanFatigueStates.getOrElse(fatigue) { beanFatigueStates.last() }
+            } else {
+                batteryFatigueStates.getOrElse(fatigue) { batteryFatigueStates.last() }
+            }
 
             moodIcon = context.getDrawable(moodState.icon)!!
             moodForegroundPaint.color = Color.parseColor(moodState.colour)
@@ -383,15 +403,6 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             fatigueForegroundPaint.color = Color.parseColor(fatigueState.colour)
             fatigueBackgroundPaint.color = Color.parseColor(fatigueState.colour)
             fatigueBackgroundPaint.alpha = 128
-        }
-
-        private fun readStepCount() {
-            // Schedule the one time work
-            val oneTimeWorkRequest = OneTimeWorkRequest.Builder(
-                StepsWorker::class.java
-            ).addTag("StepsWorker").build()
-            WorkManager.getInstance(applicationContext).enqueue(oneTimeWorkRequest)
-            Log.d("test", "logged steps")
         }
 
 //            Log.i("test", "in")
