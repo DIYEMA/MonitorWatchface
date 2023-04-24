@@ -247,10 +247,10 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             canvas.drawText(heartRateCount, heartRateCountX, heartRateCountY, supportingTextPaint)
 
             // Draw the fatigue icon and it's clickable background (with new activity)
-            if (fatigueMedium == 1) {
-                if (fatigueImage == 0) fatigueView.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity")
-                else fatigueView.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity2")
-            }
+            if (fatigueMedium == 0) {
+                fatigueView.setActivity("com.example.fatiguemonitor.presentation.EnergySeekBarActivity")
+            } else if (fatigueImage == 0) fatigueView.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity")
+            else fatigueView.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity2")
             fatigueView.draw(canvas)
 
             val fatigueIconWidth = 50f
