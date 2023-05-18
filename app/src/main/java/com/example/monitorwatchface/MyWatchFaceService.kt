@@ -148,7 +148,12 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         @SuppressLint("Range")
         override fun onDraw(canvas: Canvas, bounds: Rect) {
             super.onDraw(canvas, bounds)
+            val verticalLength = bounds.bottom - bounds.top
+            Log.d("TEST", verticalLength.toString())
+            val horizontalLength = bounds.right - bounds.left
+            Log.d("TEST", horizontalLength.toString())
             Log.d("test", "onDraw")
+
 
             val uri = Uri.parse("content://com.example.fatiguemonitor.provider/preferences")
             val cursor = contentResolver.query(uri, null, null, null, null)
@@ -202,124 +207,139 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             canvas.drawText(amPm, bounds.exactCenterX(), amPmY, mainTextPaint)
 
             // Draw the steps count icon
-            val stepsIconWidth = 60f
-            val stepsIconHeight = 60f
-            val stepsIconLeft = bounds.exactCenterX() - resources.getDimension(R.dimen.icon_margin) - stepsIconWidth
-            val stepsIconTop = bounds.exactCenterY() + (stepsIconHeight / 3)
-            stepsIcon.setBounds(stepsIconLeft.toInt(), stepsIconTop.toInt(),
-                (stepsIconLeft + stepsIconWidth).toInt(), (stepsIconTop + stepsIconHeight).toInt()
+            val stepsIconWidth = (horizontalLength / 6)
+            val stepsIconHeight = (verticalLength / 6)
+            val stepsIconLeft = (horizontalLength / 5) - (stepsIconWidth / 2)
+            val stepsIconTop = bounds.centerY() + (verticalLength / 8) - (stepsIconHeight / 2)
+            stepsIcon.setBounds(stepsIconLeft, stepsIconTop,
+                (stepsIconLeft + stepsIconWidth), (stepsIconTop + stepsIconHeight)
             )
             stepsIcon.draw(canvas)
 
             // Draw the steps count text
             val stepsCountText = "Steps"
-            val stepsCountTextX = bounds.exactCenterX() - resources.getDimension(R.dimen.icon_margin) - (stepsIconWidth / 2)
+            val stepsCountTextX = stepsIconLeft + (stepsIconWidth / 2)
             val stepsCountTextY = stepsIconTop - (supportingTextPaint.textSize / 4)
-            canvas.drawText(stepsCountText, stepsCountTextX, stepsCountTextY, supportingTextPaint)
+            canvas.drawText(stepsCountText,
+                stepsCountTextX.toFloat(), stepsCountTextY, supportingTextPaint)
 
             // Draw the steps
             val stepsCount = "$steps"
-            val stepsCountX = bounds.exactCenterX() - resources.getDimension(R.dimen.icon_margin) - (stepsIconWidth / 2)
             val stepsCountY = stepsIconTop + stepsIconHeight + supportingTextPaint.textSize
-            canvas.drawText(stepsCount, stepsCountX, stepsCountY, supportingTextPaint)
+            canvas.drawText(stepsCount, stepsCountTextX.toFloat(),
+                stepsCountY, supportingTextPaint)
 
             // Draw the heart rate icon
-            val heartIconWidth = 60f
-            val heartIconHeight = 60f
-            val heartIconLeft = bounds.exactCenterX() + resources.getDimension(R.dimen.icon_margin)
-            val heartIconTop = bounds.exactCenterY() + (heartIconHeight / 3)
-            heartIcon.setBounds(heartIconLeft.toInt(), heartIconTop.toInt(),
-                (heartIconLeft + heartIconWidth).toInt(), (heartIconTop + heartIconHeight).toInt()
-            )
+            val heartIconWidth = (horizontalLength / 6)
+            val heartIconHeight = (verticalLength / 6)
+            val heartIconLeft = (4 * (horizontalLength / 5)) - (stepsIconWidth / 2)
+            val heartIconTop = bounds.centerY() + (verticalLength / 8) - (heartIconHeight / 2)
+            heartIcon.setBounds(heartIconLeft, heartIconTop,
+                (heartIconLeft + heartIconWidth), (heartIconTop + heartIconHeight))
             heartIcon.draw(canvas)
 
             // Draw the heart rate text
             val heartRateText = "HR"
-            val heartRateTextX = bounds.exactCenterX() + resources.getDimension(R.dimen.icon_margin) + (heartIconWidth / 2)
+            val heartRateTextX = heartIconLeft + (heartIconWidth / 2)
             val heartRateTextY = heartIconTop - (supportingTextPaint.textSize / 4)
-            canvas.drawText(heartRateText, heartRateTextX, heartRateTextY, supportingTextPaint)
+            canvas.drawText(heartRateText,
+                heartRateTextX.toFloat(), heartRateTextY, supportingTextPaint)
 
             // Draw the heart rate count
             if (hr < 0) hr = 0
             val heartRateCount = "$hr BPM"
-            val heartRateCountX = bounds.exactCenterX() + resources.getDimension(R.dimen.icon_margin) + (heartIconWidth / 2)
             val heartRateCountY = heartIconTop + heartIconHeight + supportingTextPaint.textSize
-            canvas.drawText(heartRateCount, heartRateCountX, heartRateCountY, supportingTextPaint)
+            canvas.drawText(heartRateCount, heartRateTextX.toFloat(), heartRateCountY, supportingTextPaint)
 
+            val fatigueIconWidth = (horizontalLength / 7.25)
+            val fatigueIconHeight = (verticalLength / 5.15)
             // Draw the fatigue icon and it's clickable background (with new activity)
             if (fatigueMedium == 0) {
                 fatigueView.setActivity("com.example.fatiguemonitor.presentation.EnergySeekBarActivity")
-            } else if (fatigueImage == 0) fatigueView.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity")
-            else fatigueView.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity2")
-            fatigueView.draw(canvas)
+            } else if (fatigueImage == 0) {
+                fatigueView.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity")
+            } else {
+                fatigueView.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity2")
+            }
 
-            val fatigueIconWidth = 50f
-            val fatigueIconHeight = 70f
-//            val fatigueIconWidth = 60f
-//            val fatigueIconHeight = 60f
-            val fatigueIconLeft = (bounds.exactCenterX() - resources.getDimension(R.dimen.icon_margin)) * 0.8
-            val fatigueIconTop = (bounds.exactCenterY() - (resources.getDimension(R.dimen.icon_margin) / 2)) - fatigueIconHeight - 10f
+            val fatigueIconLeft = (horizontalLength / 4.5)
+            val fatigueIconTop = bounds.centerY() - (verticalLength / 5) - (fatigueIconHeight / 2)
             fatigueIcon.setBounds(fatigueIconLeft.toInt(), fatigueIconTop.toInt(),
                 (fatigueIconLeft + fatigueIconWidth).toInt(), (fatigueIconTop + fatigueIconHeight).toInt())
+
+            fatigueView.setIconPosition(fatigueIcon.bounds.left.toFloat() * 0.85f,
+                fatigueIcon.bounds.top.toFloat() * 0.9f, fatigueIcon.bounds.right.toFloat() * 1.1f,
+                fatigueIcon.bounds.bottom.toFloat() * 1.1f)
+            fatigueView.draw(canvas)
             fatigueIcon.draw(canvas)
 
             // Draw the fatigue text
             val fatigueText = "Fatigue"
-            val fatigueTextX = ((bounds.exactCenterX() - resources.getDimension(R.dimen.icon_margin)) * 0.8) + (fatigueIconWidth / 2)
+            val fatigueTextX = fatigueIconLeft + (fatigueIconWidth / 2)
             val fatigueTextY = fatigueIconTop - (supportingTextPaint.textSize / 4)
             canvas.drawText(fatigueText,
-                fatigueTextX.toFloat(), fatigueTextY, supportingTextPaint)
+                fatigueTextX.toFloat(), fatigueTextY.toFloat(), supportingTextPaint)
+
 
             // Draw the mood icon and it's clickable background (with new position and activity)
-            moodView.setIconPosition(215f, 85f, 295f, 120f)
-            if (moodMedium == 1) moodView.setActivity("com.example.fatiguemonitor.presentation.MoodSliderActivity")
-            else moodView.setActivity("com.example.fatiguemonitor.presentation.MoodSeekBarActivity")
-            moodView.draw(canvas)
+            val moodIconWidth = (horizontalLength / 6)
+            val moodIconHeight = (verticalLength / 5.15)
+            if (moodMedium == 0) {
+                moodView.setActivity("com.example.fatiguemonitor.presentation.MoodSeekBarActivity")
+            } else {
+                moodView.setActivity("com.example.fatiguemonitor.presentation.MoodSliderActivity")
+            }
 
-            val moodIconWidth = 70f
-            val moodIconHeight = 85f
-            val moodIconLeft = (bounds.exactCenterX() + resources.getDimension(R.dimen.icon_margin)) * 0.8 + 20f
-            val moodIconTop = (bounds.exactCenterY() - (resources.getDimension(R.dimen.icon_margin) / 2)) - fatigueIconHeight - 15f
+            val moodIconLeft = 2.725 * (horizontalLength / 4.5)
+            val moodIconTop = bounds.centerY() - (verticalLength / 5) - (moodIconHeight / 2)
             moodIcon.setBounds(moodIconLeft.toInt(), moodIconTop.toInt(),
-                (moodIconLeft + moodIconWidth).toInt(), (moodIconTop + moodIconHeight).toInt()
-            )
+                (moodIconLeft + moodIconWidth).toInt(), (moodIconTop + moodIconHeight).toInt())
+
+            moodView.setIconPosition(moodIcon.bounds.left.toFloat() * 0.97f,
+                moodIcon.bounds.top.toFloat() * 0.9f, moodIcon.bounds.right.toFloat() * 1.03f,
+                moodIcon.bounds.bottom.toFloat() * 1.1f)
+            moodView.draw(canvas)
             moodIcon.draw(canvas)
 
             // Draw the mood text
             val moodText = "Mood"
-            val moodTextX = (bounds.exactCenterX() + resources.getDimension(R.dimen.icon_margin)) * 0.8 + 55f
-            canvas.drawText(moodText, moodTextX.toFloat(), moodIconTop, supportingTextPaint)
+            val moodTextX = moodIconLeft + (moodIconWidth / 2)
+            val moodTextY = moodIconTop - (supportingTextPaint.textSize / 4)
+            canvas.drawText(moodText,
+                moodTextX.toFloat(), moodTextY.toFloat(), supportingTextPaint)
 
             // Draw the fatigue and mood progress rings
-            val centerX = bounds.exactCenterX()
-            val centerY = bounds.exactCenterY()
-            val radius = min(centerX, centerY) - resources.getDimension(R.dimen.progress_margin)
+            val centerX = bounds.centerX()
+            val centerY = bounds.centerY()
+            val radius = min(centerX.toFloat(), centerY.toFloat()) - resources.getDimension(R.dimen.progress_margin)
             val rectF = RectF(centerX - radius, centerY - radius, centerX + radius, centerY + radius)
             canvas.drawArc(rectF, 180f, 85f, false, fatigueBackgroundPaint)
             canvas.drawArc(rectF, 180f, (17 * (fatigue + 1)).toFloat(), false, fatigueForegroundPaint)
-            canvas.drawArc(rectF, 275f, 85f, false, moodBackgroundPaint)
-            canvas.drawArc(rectF, 275f, (17 * (mood + 1)).toFloat(), false, moodForegroundPaint)
+//            canvas.drawArc(rectF, 275f, 85f, false, moodBackgroundPaint)
+//            canvas.drawArc(rectF, 275f, (17 * (mood + 1)).toFloat(), false, moodForegroundPaint)
 
             // Draw the battery progress ring
             val batteryManager = getSystemService(BATTERY_SERVICE) as BatteryManager
             val batteryLevel = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
             val batteryCount = "$batteryLevel%"
-            canvas.drawText(batteryCount, bounds.exactCenterX(),
-                bounds.exactCenterY() + (resources.getDimension(R.dimen.icon_margin) * 1.9f),
-                supportingTextPaint)
+            val batteryY = ((4.35 * (verticalLength / 5))).toFloat()
+            canvas.drawText(batteryCount, bounds.centerX().toFloat(),
+                batteryY , supportingTextPaint)
 
-            val circleRadius = 30f
-            val circleY = bounds.exactCenterY() + (resources.getDimension(R.dimen.icon_margin) * 1.9f) - (supportingTextPaint.textSize / 2)
-            val circleRectF = RectF(bounds.centerX() - circleRadius, circleY - circleRadius,
-                bounds.centerX() + circleRadius, circleY + circleRadius)
-            canvas.drawCircle(circleRectF.centerX(), circleRectF.centerY(), circleRadius, batteryBackgroundPaint)
+            val circleRadius = (horizontalLength / 12)
+            val circleY = batteryY - (supportingTextPaint.textSize / 2)
+            val circleRectF = RectF(
+                (bounds.centerX() - circleRadius).toFloat(), circleY - circleRadius,
+                (bounds.centerX() + circleRadius).toFloat(), circleY + circleRadius)
+            canvas.drawCircle(circleRectF.centerX(), circleRectF.centerY(),
+                circleRadius.toFloat(), batteryBackgroundPaint)
             canvas.drawArc(circleRectF, -90f, (batteryLevel.toFloat() / 100f) * 360f, false, batteryForegroundPaint)
 
             // Draw the battery text
-            val batteryText = "Power"
+            val batteryText = "Device Power"
             val batteryTextX = bounds.exactCenterX()
-            val batteryTextY = circleRectF.top - (supportingTextPaint.textSize * 0.5)
-            canvas.drawText(batteryText, batteryTextX, batteryTextY.toFloat(), supportingTextPaint)
+            val batteryTextY = circleRectF.top - (supportingTextPaint.textSize / 2)
+            canvas.drawText(batteryText, batteryTextX, batteryTextY, supportingTextPaint)
         }
 
         override fun onTimeTick() {
@@ -363,12 +383,21 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         private fun dynamicChange(context: Context) {
             data class State(val icon: Int, val colour: String)
 
+//            val moodStates = listOf(
+//                State(R.drawable.very_sad, "#EE2C37"),
+//                State(R.drawable.sad, "#F36831"),
+//                State(R.drawable.moderate, "#FCD90E"),
+//                State(R.drawable.happy, "#9CCC3C"),
+//                State(R.drawable.very_happy, "#46B648")
+//            )
+
             val moodStates = listOf(
-                State(R.drawable.very_sad, "#EE2C37"),
-                State(R.drawable.sad, "#F36831"),
-                State(R.drawable.moderate, "#FCD90E"),
-                State(R.drawable.happy, "#9CCC3C"),
-                State(R.drawable.very_happy, "#46B648")
+                State(R.drawable.angry, "#FE4B22"),
+                State(R.drawable.disgusted, "#55D051"),
+                State(R.drawable.surprised, "#FC9908"),
+                State(R.drawable.sad2, "#02B1EA"),
+                State(R.drawable.happy2, "#FDE21F"),
+                State(R.drawable.scared, "#CD66FF")
             )
 
             val beanFatigueStates = listOf(

@@ -14,7 +14,8 @@ class MyCustomView(context: Context) : View(context) {
 
     private var mIsClickable = true
     private val mPaint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private var mIconRect = RectF(77.5f, 10f, 150f, 200f)
+    private var mIconRect = RectF(0f, 0f, 0f, 0f)
+//    private var mIconRect = RectF(77.5f, 10f, 150f, 200f)
     private var mPackageName = "com.example.fatiguemonitor"
     private var mActivityName = "com.example.fatiguemonitor.presentation.EnergySeekBarActivity"
 
@@ -87,7 +88,7 @@ class MyCustomView(context: Context) : View(context) {
 //    }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawCircle(mIconRect.centerX(), mIconRect.centerY(), mIconRect.width() / 2, mPaint)
+        canvas.drawCircle(mIconRect.centerX(), mIconRect.centerY(), mIconRect.width() / 2.0f, mPaint)
     }
 }
 
