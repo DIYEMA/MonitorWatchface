@@ -12,10 +12,10 @@ import android.view.View
 
 class MyCustomView(context: Context) : View(context) {
 
+    // Declare and initialise variables
     private var mIsClickable = true
     private val mPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var mIconRect = RectF(0f, 0f, 0f, 0f)
-//    private var mIconRect = RectF(77.5f, 10f, 150f, 200f)
     private var mPackageName = "com.example.fatiguemonitor"
     private var mActivityName = "com.example.fatiguemonitor.presentation.EnergySeekBarActivity"
 
@@ -24,15 +24,18 @@ class MyCustomView(context: Context) : View(context) {
         mPaint.color = Color.parseColor("#332F2F")
     }
 
+    // Change circular background icon position
     fun setIconPosition(left: Float, top: Float, right: Float, bottom: Float) {
         mIconRect = RectF(left, top, right, bottom)
         invalidate()
     }
 
+    // Change intended activity to be launched
     fun setActivity(activityName: String) {
         mActivityName = activityName
     }
 
+    // Toggle click-ability when the watch face is no longer in focus
     fun toggleClickable(isClickable: Boolean) {
         mIsClickable = isClickable
     }
@@ -42,19 +45,20 @@ class MyCustomView(context: Context) : View(context) {
         mIsClickable = visibility == VISIBLE
     }
 
+    // Custom override to launch preferred input screen once the circular background icon is touched
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                // User touched the screen
-                // Start a delayed runnable to check if the touch is a long press
+                // User touched the screen, start a delayed runnable
                 val handler = Handler()
                 handler.postDelayed({
                     if (event.actionMasked == MotionEvent.ACTION_DOWN && mIsClickable) {
-                        // Touch is a long press
-                        // Perform the action you want here
+                        // Launch preferred input screen
                         if (mIconRect.contains(event.x, event.y)) {
                             val intent = Intent().apply {
                                 setClassName(mPackageName, mActivityName)
+                                // Flags used to ensure a single task is started and is brought to
+                                // the top of a blank task stack
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                             }
                             context.startActivity(intent)
@@ -62,30 +66,9 @@ class MyCustomView(context: Context) : View(context) {
                     }
                 }, 250) // Delay of 250 milliseconds
             }
-//            MotionEvent.ACTION_UP -> {
-//                // User lifted their finger from the screen
-//                // Cancel any pending long press callbacks
-//                handler.removeCallbacksAndMessages(null)
-//            }
         }
         return super.onTouchEvent(event)
     }
-
-
-//    override fun onTouchEvent(event: MotionEvent): Boolean {
-//        if (event.action == MotionEvent.ACTION_UP && mIsClickable) {
-//            if (mIconRect.contains(event.x, event.y)) {
-//                val intent = Intent().apply {
-//                    setClassName(mPackageName, mActivityName)
-//                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-//                    addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-//                }
-//                context.startActivity(intent)
-//                return true
-//            }
-//        }
-//        return super.onTouchEvent(event)
-//    }
 
     override fun onDraw(canvas: Canvas) {
         canvas.drawCircle(mIconRect.centerX(), mIconRect.centerY(), mIconRect.width() / 2.0f, mPaint)
