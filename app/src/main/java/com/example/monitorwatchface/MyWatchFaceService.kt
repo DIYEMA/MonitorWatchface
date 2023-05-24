@@ -361,8 +361,6 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
     // Helper function to draw elements related to fatigue
     private fun drawFatigueElements(canvas: Canvas, bounds: Rect, fatigueView: MyCustomView) {
-        fatigueIcon = applicationContext.getDrawable(R.drawable.default_icon)!!
-
         // Draw the fatigue icon and it's clickable circular background
         val fatigueIconWidth = (horizontalLength / 7.25)
         val fatigueIconHeight = (verticalLength / 5.15)
@@ -405,8 +403,6 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
     // Helper function to draw elements related to mood
     private fun drawMoodElements(canvas: Canvas, bounds: Rect, moodView: MyCustomView) {
-        moodIcon = applicationContext.getDrawable(R.drawable.default_icon)!!
-
         // Draw the mood icon and it's clickable circular background
         val moodIconWidth = (horizontalLength / 6)
         val moodIconHeight = (verticalLength / 5.15)
