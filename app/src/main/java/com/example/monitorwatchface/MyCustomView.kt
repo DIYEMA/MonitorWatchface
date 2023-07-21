@@ -24,6 +24,12 @@ class MyCustomView(context: Context) : View(context) {
         mPaint.color = Color.parseColor("#332F2F")
     }
 
+    // Change circular background paint colour
+    fun setPaintColour(colourString: String) {
+        mPaint.color = Color.parseColor(colourString)
+        invalidate()
+    }
+
     // Change circular background icon position
     fun setIconPosition(left: Float, top: Float, right: Float, bottom: Float) {
         mIconRect = RectF(left, top, right, bottom)
