@@ -145,7 +145,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             preferencesContentResolver()
 
             // Use a ContentResolver to gather updated step count provided by Mobvoi
-            stepsContentResolver()
+//            stepsContentResolver()
 
             // Set mood, intensity and fatigue icons according to current values
             dynamicChange(applicationContext)
