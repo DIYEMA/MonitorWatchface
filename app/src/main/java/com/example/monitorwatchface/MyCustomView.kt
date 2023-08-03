@@ -53,24 +53,20 @@ class MyCustomView(context: Context) : View(context) {
 
     // Custom override to launch preferred input screen once the circular background icon is touched
     override fun onTouchEvent(event: MotionEvent): Boolean {
+//        val handler = Handler()
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                // User touched the screen, start a delayed runnable
-                val handler = Handler()
-                handler.postDelayed({
+//                handler.postDelayed({
                     if (event.actionMasked == MotionEvent.ACTION_DOWN && mIsClickable) {
-                        // Launch preferred input screen
                         if (mIconRect.contains(event.x, event.y)) {
                             val intent = Intent().apply {
                                 setClassName(mPackageName, mActivityName)
-                                // Flags used to ensure a single task is started and is brought to
-                                // the top of a blank task stack
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                             }
                             context.startActivity(intent)
                         }
                     }
-                }, 250) // Delay of 250 milliseconds
+//                }, 100)
             }
         }
         return super.onTouchEvent(event)

@@ -145,6 +145,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             preferencesContentResolver()
 
             // Use a ContentResolver to gather updated step count provided by Mobvoi
+            // SUMMER 2023 UPDATE: MIGRATION TO GOOGLE PIXEL WATCH
 //            stepsContentResolver()
 
             // Set mood, intensity and fatigue icons according to current values
@@ -263,10 +264,13 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     // Helper function to gather updated values and preferences set by the companion app
     @SuppressLint("Range")
     private fun preferencesContentResolver() {
-        val uri = Uri.parse("content://com.example.fatiguemonitor.provider/preferences")
+        val uri = Uri.parse("content://com.example.fatiguemonitor.provider")
         val cursor = contentResolver.query(uri, null, null, null, null)
         if (cursor != null && cursor.moveToFirst()) {
-            mood = cursor.getInt(cursor.getColumnIndex("value"))
+            steps = cursor.getInt(cursor.getColumnIndex("value"))
+            if (cursor.moveToNext()) {
+                mood = cursor.getInt(cursor.getColumnIndex("value"))
+            }
             if (cursor.moveToNext()) {
                 moodMedium = cursor.getInt(cursor.getColumnIndex("value"))
             }
