@@ -173,7 +173,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             drawFatigueElements(canvas, bounds, fatigueView)
 
             // Draw the fatigue progress ring
-            drawFatigueProgressRing(canvas, bounds)
+//            drawFatigueProgressRing(canvas, bounds)
 
             // Draw elements related to heart rate count
             // SUMMER 2023 UPDATE: REMOVED FOR STUDY
@@ -252,9 +252,9 @@ class MyWatchFaceService : CanvasWatchFaceService() {
                 batteryFatigueStates.getOrElse(fatigue) { batteryFatigueStates.first() }
             }
 
-            moodIcon = context.getDrawable(moodState.icon)!!
-            intensityIcon = context.getDrawable(intensityState.icon)!!
-            fatigueIcon = context.getDrawable(fatigueState.icon)!!
+            moodIcon = context.getDrawable(R.drawable.default_icon)!!
+            intensityIcon = context.getDrawable(R.drawable.default_icon)!!
+            fatigueIcon = context.getDrawable(R.drawable.default_icon)!!
             fatigueForegroundPaint.color = Color.parseColor(fatigueState.colour)
             fatigueBackgroundPaint.color = Color.parseColor(fatigueState.colour)
             fatigueBackgroundPaint.alpha = 128
@@ -320,7 +320,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
     // Helper function to draw elements related to steps count
     private fun drawStepsCountElements(canvas: Canvas, bounds: Rect) {
-        stepsIcon = applicationContext.getDrawable(R.drawable.steps_icon)!!
+        stepsIcon = applicationContext.getDrawable(R.drawable.default_icon)!!
 
         // Draw the steps count icon
         val stepsIconWidth = (horizontalLength / 6)
@@ -334,7 +334,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         stepsIcon.draw(canvas)
 
         // Draw the steps count text
-        val stepsCountText = "Steps"
+        val stepsCountText = "Food"
         val stepsCountTextX = stepsIconLeft + (stepsIconWidth / 2)
         val stepsCountTextY = stepsIconTop - (supportingTextPaint.textSize / 4)
         canvas.drawText(
