@@ -6,7 +6,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
-import android.os.Handler
 import android.view.MotionEvent
 import android.view.View
 
@@ -31,7 +30,7 @@ class MyCustomView(context: Context) : View(context) {
     }
 
     // Change circular background icon position
-    fun setIconPosition(left: Float, top: Float, right: Float, bottom: Float) {
+    fun setButtonPosition(left: Float, top: Float, right: Float, bottom: Float) {
         mIconRect = RectF(left, top, right, bottom)
         invalidate()
     }
