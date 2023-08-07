@@ -2,6 +2,7 @@
 
 package com.example.monitorwatchface
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
@@ -116,6 +117,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             verticalLength = bounds.bottom - bounds.top
             horizontalLength = bounds.right - bounds.left
 
+            preferencesContentResolver()
 
             // Set mood, intensity and sleep icons according to current values
             setIcons(applicationContext)
@@ -143,7 +145,39 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
 
         }
-
+        @SuppressLint("Range")
+        private fun preferencesContentResolver() {
+            val uri = Uri.parse("content://com.example.fatiguemonitor.provider")
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            if (cursor != null && cursor.moveToFirst()) {
+                steps = cursor.getInt(cursor.getColumnIndex("value"))
+                if (cursor.moveToNext()) {
+                    mood = cursor.getInt(cursor.getColumnIndex("value"))
+                }
+                if (cursor.moveToNext()) {
+                    moodMedium = cursor.getInt(cursor.getColumnIndex("value"))
+                }
+                if (cursor.moveToNext()) {
+                    intensity = cursor.getInt(cursor.getColumnIndex("value"))
+                }
+                if (cursor.moveToNext()) {
+                    cep = cursor.getInt(cursor.getColumnIndex("value"))
+                }
+                if (cursor.moveToNext()) {
+                    fatigue = cursor.getInt(cursor.getColumnIndex("value"))
+                }
+                if (cursor.moveToNext()) {
+                    fatigueMedium = cursor.getInt(cursor.getColumnIndex("value"))
+                }
+                if (cursor.moveToNext()) {
+                    fatigueImage = cursor.getInt(cursor.getColumnIndex("value"))
+                }
+                if (cursor.moveToNext()) {
+                    hr = cursor.getInt(cursor.getColumnIndex("value"))
+                }
+            }
+            cursor?.close()
+        }
         // Redraw watch face every minute
         override fun onTimeTick() {
             super.onTimeTick()
