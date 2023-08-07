@@ -32,7 +32,12 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     private lateinit var icon1: Drawable
     private lateinit var icon2: Drawable
     private lateinit var icon3: Drawable
+    private lateinit var icon4: Drawable
 
+    private lateinit var b1Text: String
+    private lateinit var b2Text: String
+    private lateinit var b3Text: String
+    private lateinit var b4Text: String
     // Declare variables for user preferences
     private var b1medium = 0
     private var b2medium = 0
@@ -43,7 +48,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     private var b3image = 0
     private var b4image = 0
 
-    private var iconSize = 5
+    private var iconSize = 4
 
     // Declare variables to collect screen size
     private var verticalLength = 0
@@ -134,15 +139,13 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             setIcons(applicationContext)
 
             // Draw the background colour
-            canvas.drawColor(backgroundColour)
+            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
             // Draw the current time in 12-hour clock format
             drawTime(canvas, bounds)
 
             // Draw the battery progress ring
             drawBatteryProgressRing(canvas, bounds)
-
-
 
             // Draw elements related to mood
             drawButton1Elements(canvas, bounds, button1View)
@@ -216,7 +219,9 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         override fun onVisibilityChanged(visible: Boolean) {
             super.onVisibilityChanged(visible)
             button1View.toggleClickable(visible)
+            button2View.toggleClickable(visible)
             button3View.toggleClickable(visible)
+            button4View.toggleClickable(visible)
         }
 
         // Helper function to set sleep and mood icons according to current values
@@ -225,6 +230,11 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             icon1 = context.getDrawable(R.drawable.default_icon)!!
             icon2 = context.getDrawable(R.drawable.default_icon)!!
             icon3 = context.getDrawable(R.drawable.default_icon)!!
+            icon4 = context.getDrawable(R.drawable.default_icon)!!
+            b1Text = context.getString(R.string.button1Text)!!
+            b2Text = context.getString(R.string.button2Text)!!
+            b3Text = context.getString(R.string.button3Text)!!
+            b4Text = context.getString(R.string.button4Text)!!
 
         }
     }
@@ -259,7 +269,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             batteryY.toFloat(), supportingTextPaint
         )
 
-        val circleRadius = (horizontalLength / (iconSize*2))
+        val circleRadius = (horizontalLength / (iconSize*4))
         val circleX = batteryX
         val circleY = batteryY - (supportingTextPaint.textSize / 4)
         val circleRectF = RectF(
@@ -279,7 +289,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         )
 
         // Draw the battery text
-        val batteryText = "Device Power"
+        val batteryText = "Battery"
         val batteryTextY = circleRectF.top - (supportingTextPaint.textSize / 2.5)
         canvas.drawText(batteryText, circleX.toFloat(), batteryTextY.toFloat(), supportingTextPaint)
     }
@@ -290,7 +300,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         val iconWidth = (horizontalLength / iconSize)
         val iconHeight = (verticalLength / iconSize)
 
-        val iconLeft = bounds.centerX() - (iconWidth*2/3 + iconWidth)
+        val iconLeft = bounds.centerX() - iconWidth/2 - iconWidth
         val iconTop = bounds.centerY()  - (iconHeight*1.5)
 
         icon1.setBounds(
@@ -305,21 +315,17 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         )
 
         // Set the circular background icon to launch the preferred input screen for mood
-        if (b2medium == 0) {
-            b1Button.setActivity("com.example.fatiguemonitor.presentation.MoodSeekBarActivity")
-        } else {
-            b1Button.setActivity("com.example.fatiguemonitor.presentation.MoodSliderActivity")
-        }
+        b1Button.setActivity("com.example.fatiguemonitor.presentation.MoodSeekBarActivity")
 
         b1Button.draw(canvas)
         icon1.draw(canvas)
 
         // Draw the mood text
-        val moodText = "b1"
+
         val moodTextX = iconLeft + (iconWidth / 2)
-        val moodTextY = iconTop - (supportingTextPaint.textSize / 4)
+        val moodTextY = iconTop + iconHeight + (supportingTextPaint.textSize )
         canvas.drawText(
-            moodText,
+            b1Text,
             moodTextX.toFloat(), moodTextY.toFloat(), supportingTextPaint
         )
     }
@@ -329,14 +335,12 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         // Draw the intensity icon mood and it's clickable circular background
         val iconWidth = (horizontalLength / iconSize)
         val iconHeight = (verticalLength / iconSize)
-        val iconLeft = bounds.centerX() + iconWidth*2/3
+        val iconLeft = bounds.centerX() - iconWidth/2 + iconWidth
         val iconTop = bounds.centerY()  - (iconHeight*1.5)
         icon2.setBounds(
             iconLeft.toInt(), iconTop.toInt(),
             ((iconLeft + iconWidth).toInt()), ((iconTop + iconHeight).toInt())
         )
-
-        b2Button.setPaintColour("#3E3939")
 
         b2Button.setButtonPosition(
             icon2.bounds.left.toFloat(),
@@ -346,16 +350,15 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
         // Set the intensity icon to launch the input screen for intensity
         b2Button.setActivity("com.example.fatiguemonitor.presentation.IntensityActivity")
-
         b2Button.draw(canvas)
         icon2.draw(canvas)
 
         // Draw the mood text
-        val intensityText = "b2"
+
         val intensityTextX = iconLeft + (iconWidth / 2)
-        val intensityTextY = iconTop - (supportingTextPaint.textSize / 2)
+        val intensityTextY = iconTop + iconHeight + (supportingTextPaint.textSize )
         canvas.drawText(
-            intensityText,
+            b2Text,
             intensityTextX.toFloat(), intensityTextY.toFloat(), supportingTextPaint
         )
     }
@@ -365,7 +368,8 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         // Draw the sleep icon and it's clickable circular background
         val iconWidth = (horizontalLength / iconSize)
         val iconHeight = (verticalLength / iconSize)
-        val iconLeft = bounds.centerX() - (iconWidth/2) + iconWidth*1.5
+
+        val iconLeft = bounds.centerX() - (iconWidth/2) - iconWidth
         val iconTop = bounds.centerY()  + (iconHeight*1.5) - iconHeight
         icon3.setBounds(
             iconLeft.toInt(),
@@ -375,54 +379,57 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         )
 
         b3Button.setButtonPosition(
-            icon3.bounds.left.toFloat() * 0.85f,
-            icon3.bounds.top.toFloat() * 0.9f, icon3.bounds.right.toFloat() * 1.1f,
-            icon3.bounds.bottom.toFloat() * 1.1f
+            icon3.bounds.left.toFloat(),
+            icon3.bounds.top.toFloat(), icon3.bounds.right.toFloat(),
+            icon3.bounds.bottom.toFloat()
         )
 
         // Set the circular background icon to launch the preferred input screen for sleep
-        if (b3medium == 0) {
-            b3Button.setActivity("com.example.fatiguemonitor.presentation.EnergySeekBarActivity")
-        } else if (b3image == 0) {
-            b3Button.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity")
-        } else {
-            b3Button.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity2")
-        }
+
+        b3Button.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity")
+
 
         b3Button.draw(canvas)
         icon3.draw(canvas)
 
         // Draw the sleep text
-        val sleepText = "b3"
+
         val sleepTextX = iconLeft + (iconWidth / 2)
         val sleepTextY = iconTop - (supportingTextPaint.textSize / 4)
         canvas.drawText(
-            sleepText,
+            b3Text,
             sleepTextX.toFloat(), sleepTextY.toFloat(), supportingTextPaint
         )
     }
     // Helper function to draw elements related to food count
     private fun drawButton4Elements(canvas: Canvas, bounds: Rect, b4Button: MyCustomView) {
-        b4Icon = applicationContext.getDrawable(R.drawable.default_icon)!!
+
 
         // Draw the food count icon
         val iconWidth = (horizontalLength / iconSize)
         val iconHeight = (verticalLength / iconSize)
-        val iconLeft = bounds.centerX() - (iconWidth/2) - iconWidth*1.5
+        val iconLeft = bounds.centerX() - (iconWidth/2) + iconWidth
         val iconTop = bounds.centerY()  + (iconHeight*1.5) - iconHeight
 
-        b4Icon.setBounds(
+        icon4.setBounds(
             iconLeft.toInt(), iconTop.toInt(),
             (iconLeft + iconWidth).toInt(), (iconTop + iconHeight).toInt()
         )
-        b4Icon.draw(canvas)
+        b4Button.setButtonPosition(
+            icon4.bounds.left.toFloat(),
+            icon4.bounds.top.toFloat(), icon4.bounds.right.toFloat(),
+            icon4.bounds.bottom.toFloat()
+        )
+        b4Button.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity")
+        b4Button.draw(canvas)
+        icon4.draw(canvas)
 
         // Draw the food count text
-        val foodCountText = "b4"
+
         val foodCountTextX = iconLeft + (iconWidth / 2)
         val foodCountTextY = iconTop - (supportingTextPaint.textSize / 4)
         canvas.drawText(
-            foodCountText,
+            b4Text,
             foodCountTextX.toFloat(), foodCountTextY.toFloat(), supportingTextPaint
         )
 

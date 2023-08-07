@@ -20,7 +20,7 @@ class MyCustomView(context: Context) : View(context) {
 
     init {
         mPaint.style = Paint.Style.FILL
-        mPaint.color = Color.parseColor("#332F2F")
+        mPaint.color = Color.parseColor("#00FFFFFF")
     }
 
     // Change circular background paint colour
