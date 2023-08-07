@@ -28,15 +28,22 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     private var currentTime = Calendar.getInstance()
 
 
-    private lateinit var foodIcon: Drawable
+    private lateinit var b4Icon: Drawable
     private lateinit var moodIcon: Drawable
     private lateinit var intensityIcon: Drawable
     private lateinit var button1: Drawable
 
     // Declare variables for user preferences
-    private var moodMedium = 0
-    private var sleepMedium = 0
-    private var sleepImage = 0
+    private var b1medium = 0
+    private var b2medium = 0
+    private var b3medium = 0
+    private var b4medium = 0
+    private var b1image = 0
+    private var b2image = 0
+    private var b3image = 0
+    private var b4image = 0
+
+
 
     // Declare variables to collect screen size
     private var verticalLength = 0
@@ -83,32 +90,36 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     private inner class MyEngine : Engine() {
 
         // Declare circular background
-        private lateinit var moodView: MyCustomView
-        private lateinit var intensityView: MyCustomView
-        private lateinit var sleepView: MyCustomView
+        private lateinit var button1View: MyCustomView
+        private lateinit var button2View: MyCustomView
+        private lateinit var button3View: MyCustomView
+        private lateinit var button4View: MyCustomView
 
         override fun onCreate(surfaceHolder: SurfaceHolder) {
             super.onCreate(surfaceHolder)
-            moodView = MyCustomView(this@MyWatchFaceService)
-            intensityView = MyCustomView(this@MyWatchFaceService)
-            sleepView = MyCustomView(this@MyWatchFaceService)
+            button1View = MyCustomView(this@MyWatchFaceService)
+            button2View = MyCustomView(this@MyWatchFaceService)
+            button3View = MyCustomView(this@MyWatchFaceService)
+            button4View = MyCustomView(this@MyWatchFaceService)
             setTouchEventsEnabled(true)
         }
 
         // Remove circular background click-ability on destroy
         override fun onDestroy() {
             super.onDestroy()
-            moodView.toggleClickable(false)
-            intensityView.toggleClickable(false)
-            sleepView.toggleClickable(false)
+            button1View.toggleClickable(false)
+            button2View.toggleClickable(false)
+            button3View.toggleClickable(false)
+            button4View.toggleClickable(false)
         }
 
         // Upon circular background touch, launch input screens
         override fun onTouchEvent(event: MotionEvent) {
             super.onTouchEvent(event)
-            moodView.onTouchEvent(event)
-            intensityView.onTouchEvent(event)
-            sleepView.onTouchEvent(event)
+            button1View.onTouchEvent(event)
+            button2View.onTouchEvent(event)
+            button3View.onTouchEvent(event)
+            button4View.onTouchEvent(event)
         }
 
         override fun onDraw(canvas: Canvas, bounds: Rect) {
@@ -131,17 +142,19 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             // Draw the battery progress ring
             drawBatteryProgressRing(canvas, bounds)
 
-            // Draw elements related to food count
-            drawButton1Elements(canvas, bounds)
+
 
             // Draw elements related to mood
-            drawButton2Elements(canvas, bounds, moodView)
+            drawButton1Elements(canvas, bounds, button1View)
 
             // Draw elements related to intensity
-            drawButton3Elements(canvas, bounds, intensityView)
+            drawButton2Elements(canvas, bounds, button2View)
 
             // Draw elements related to sleep
-            drawButton4Elements(canvas, bounds, sleepView)
+            drawButton3Elements(canvas, bounds, button3View)
+
+            // Draw elements related to food count
+            drawButton4Elements(canvas, bounds, button4View)
 
 
         }
@@ -150,30 +163,29 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             val uri = Uri.parse("content://com.example.fatiguemonitor.provider")
             val cursor = contentResolver.query(uri, null, null, null, null)
             if (cursor != null && cursor.moveToFirst()) {
-                steps = cursor.getInt(cursor.getColumnIndex("value"))
                 if (cursor.moveToNext()) {
-                    mood = cursor.getInt(cursor.getColumnIndex("value"))
+                    b1medium = cursor.getInt(cursor.getColumnIndex("value"))
                 }
                 if (cursor.moveToNext()) {
-                    moodMedium = cursor.getInt(cursor.getColumnIndex("value"))
+                    b1image = cursor.getInt(cursor.getColumnIndex("value"))
                 }
                 if (cursor.moveToNext()) {
-                    intensity = cursor.getInt(cursor.getColumnIndex("value"))
+                    b2medium = cursor.getInt(cursor.getColumnIndex("value"))
                 }
                 if (cursor.moveToNext()) {
-                    cep = cursor.getInt(cursor.getColumnIndex("value"))
+                    b2image = cursor.getInt(cursor.getColumnIndex("value"))
                 }
                 if (cursor.moveToNext()) {
-                    fatigue = cursor.getInt(cursor.getColumnIndex("value"))
+                    b3medium = cursor.getInt(cursor.getColumnIndex("value"))
                 }
                 if (cursor.moveToNext()) {
-                    fatigueMedium = cursor.getInt(cursor.getColumnIndex("value"))
+                    b3image = cursor.getInt(cursor.getColumnIndex("value"))
                 }
                 if (cursor.moveToNext()) {
-                    fatigueImage = cursor.getInt(cursor.getColumnIndex("value"))
+                    b4medium = cursor.getInt(cursor.getColumnIndex("value"))
                 }
                 if (cursor.moveToNext()) {
-                    hr = cursor.getInt(cursor.getColumnIndex("value"))
+                    b4image = cursor.getInt(cursor.getColumnIndex("value"))
                 }
             }
             cursor?.close()
@@ -189,12 +201,12 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         override fun onAmbientModeChanged(inAmbientMode: Boolean) {
             if (inAmbientMode) {
                 mainTextPaint.color = Color.GRAY
-                moodView.toggleClickable(false)
-                sleepView.toggleClickable(false)
+                button1View.toggleClickable(false)
+                button3View.toggleClickable(false)
             } else {
                 mainTextPaint.color = Color.WHITE
-                moodView.toggleClickable(true)
-                sleepView.toggleClickable(true)
+                button1View.toggleClickable(true)
+                button3View.toggleClickable(true)
             }
             invalidate()
         }
@@ -203,8 +215,8 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         // to read notifications)
         override fun onVisibilityChanged(visible: Boolean) {
             super.onVisibilityChanged(visible)
-            moodView.toggleClickable(visible)
-            sleepView.toggleClickable(visible)
+            button1View.toggleClickable(visible)
+            button3View.toggleClickable(visible)
         }
 
         // Helper function to set sleep and mood icons according to current values
@@ -229,31 +241,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         canvas.drawText(amPm, bounds.exactCenterX(), amPmY, mainTextPaint)
     }
 
-    // Helper function to draw elements related to food count
-    private fun drawButton1Elements(canvas: Canvas, bounds: Rect) {
-        foodIcon = applicationContext.getDrawable(R.drawable.default_icon)!!
 
-        // Draw the food count icon
-        val foodIconWidth = (horizontalLength / 6)
-        val foodIconHeight = (verticalLength / 6)
-        val foodIconLeft = (horizontalLength / 4.5)
-        val foodIconTop = bounds.centerY() - (verticalLength / 5) - (foodIconHeight / 2)
-        foodIcon.setBounds(
-            foodIconLeft.toInt(), foodIconTop,
-            ((foodIconLeft + foodIconWidth).toInt()), (foodIconTop + foodIconHeight)
-        )
-        foodIcon.draw(canvas)
-
-        // Draw the food count text
-        val foodCountText = "Food"
-        val foodCountTextX = foodIconLeft + (foodIconWidth / 2)
-        val foodCountTextY = foodIconTop - (supportingTextPaint.textSize / 4)
-        canvas.drawText(
-            foodCountText,
-            foodCountTextX.toFloat(), foodCountTextY, supportingTextPaint
-        )
-
-    }
 
     // Helper function to draw the battery progress ring
     private fun drawBatteryProgressRing(canvas: Canvas, bounds: Rect) {
@@ -294,7 +282,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     }
 
     // Helper function to draw elements related to mood
-    private fun drawButton2Elements(canvas: Canvas, bounds: Rect, moodView: MyCustomView) {
+    private fun drawButton1Elements(canvas: Canvas, bounds: Rect, moodView: MyCustomView) {
         // Draw the mood icon and it's clickable circular background
         val moodIconWidth = (horizontalLength / 6)
         val moodIconHeight = (verticalLength / 5.15)
@@ -312,7 +300,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         )
 
         // Set the circular background icon to launch the preferred input screen for mood
-        if (moodMedium == 0) {
+        if (b2medium == 0) {
             moodView.setActivity("com.example.fatiguemonitor.presentation.MoodSeekBarActivity")
         } else {
             moodView.setActivity("com.example.fatiguemonitor.presentation.MoodSliderActivity")
@@ -332,7 +320,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     }
 
     // Helper function to draw elements related to mood
-    private fun drawButton3Elements(canvas: Canvas, bounds: Rect, intensityView: MyCustomView) {
+    private fun drawButton2Elements(canvas: Canvas, bounds: Rect, intensityView: MyCustomView) {
         // Draw the intensity icon mood and it's clickable circular background
         val intensityIconWidth = (horizontalLength / 3)
         val intensityIconHeight = (verticalLength / 7.5)
@@ -368,7 +356,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     }
 
     // Helper function to draw elements related to sleep
-    private fun drawButton4Elements(canvas: Canvas, bounds: Rect, sleepView: MyCustomView) {
+    private fun drawButton3Elements(canvas: Canvas, bounds: Rect, b3View: MyCustomView) {
         // Draw the sleep icon and it's clickable circular background
         val iconWidth = (horizontalLength / 7.25)
         val iconHeight = (verticalLength / 5.15)
@@ -381,22 +369,22 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             (iconTop + iconHeight).toInt()
         )
 
-        sleepView.setIconPosition(
+        b3View.setIconPosition(
             button1.bounds.left.toFloat() * 0.85f,
             button1.bounds.top.toFloat() * 0.9f, button1.bounds.right.toFloat() * 1.1f,
             button1.bounds.bottom.toFloat() * 1.1f
         )
 
         // Set the circular background icon to launch the preferred input screen for sleep
-        if (sleepMedium == 0) {
-            sleepView.setActivity("com.example.fatiguemonitor.presentation.EnergySeekBarActivity")
-        } else if (sleepImage == 0) {
-            sleepView.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity")
+        if (b3medium == 0) {
+            b3View.setActivity("com.example.fatiguemonitor.presentation.EnergySeekBarActivity")
+        } else if (b3image == 0) {
+            b3View.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity")
         } else {
-            sleepView.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity2")
+            b3View.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity2")
         }
 
-        sleepView.draw(canvas)
+        b3View.draw(canvas)
         button1.draw(canvas)
 
         // Draw the sleep text
@@ -407,5 +395,30 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             sleepText,
             sleepTextX.toFloat(), sleepTextY.toFloat(), supportingTextPaint
         )
+    }
+    // Helper function to draw elements related to food count
+    private fun drawButton4Elements(canvas: Canvas, bounds: Rect, b4View: MyCustomView) {
+        b4Icon = applicationContext.getDrawable(R.drawable.default_icon)!!
+
+        // Draw the food count icon
+        val iconWidth = (horizontalLength / 6)
+        val iconHeight = (verticalLength / 6)
+        val iconLeft = (horizontalLength / 4.5)
+        val iconTop = bounds.centerY() - (verticalLength / 5) - (iconHeight / 2)
+        b4Icon.setBounds(
+            iconLeft.toInt(), iconTop,
+            ((iconLeft + iconWidth).toInt()), (iconTop + iconHeight)
+        )
+        b4Icon.draw(canvas)
+
+        // Draw the food count text
+        val foodCountText = "Food"
+        val foodCountTextX = iconLeft + (iconWidth / 2)
+        val foodCountTextY = iconTop - (supportingTextPaint.textSize / 4)
+        canvas.drawText(
+            foodCountText,
+            foodCountTextX.toFloat(), foodCountTextY, supportingTextPaint
+        )
+
     }
 }
