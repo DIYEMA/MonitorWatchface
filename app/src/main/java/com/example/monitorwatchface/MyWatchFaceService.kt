@@ -315,7 +315,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         )
 
         // Set the circular background icon to launch the preferred input screen for mood
-        b1Button.setActivity("com.example.fatiguemonitor.presentation.MoodSeekBarActivity")
+        b1Button.setActivity("com.example.fatiguemonitor.presentation.Activity1")
 
         b1Button.draw(canvas)
         icon1.draw(canvas)
