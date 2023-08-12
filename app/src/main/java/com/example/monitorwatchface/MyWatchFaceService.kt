@@ -227,10 +227,10 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         // Helper function to set sleep and mood icons according to current values
         private fun setIcons(context: Context) {
 
-            icon1 = context.getDrawable(R.drawable.default_icon)!!
-            icon2 = context.getDrawable(R.drawable.default_icon)!!
-            icon3 = context.getDrawable(R.drawable.default_icon)!!
-            icon4 = context.getDrawable(R.drawable.default_icon)!!
+            icon1 = context.getDrawable(R.drawable.activity_1_icon)!!
+            icon2 = context.getDrawable(R.drawable.activity_2_icon)!!
+            icon3 = context.getDrawable(R.drawable.activity_3_icon)!!
+            icon4 = context.getDrawable(R.drawable.activity_4_icon)!!
             b1Text = context.getString(R.string.button1Text)!!
             b2Text = context.getString(R.string.button2Text)!!
             b3Text = context.getString(R.string.button3Text)!!
@@ -315,7 +315,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         )
 
         // Set the circular background icon to launch the preferred input screen for mood
-        b1Button.setActivity("com.example.fatiguemonitor.presentation.Activity1")
+        b1Button.setActivity("com.example.fatiguemonitor.presentation.Activity1Standard")
 
         b1Button.draw(canvas)
         icon1.draw(canvas)
@@ -349,7 +349,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         )
 
         // Set the intensity icon to launch the input screen for intensity
-        b2Button.setActivity("com.example.fatiguemonitor.presentation.IntensityActivity")
+        b2Button.setActivity("com.example.fatiguemonitor.presentation.Activity2Opt2")
         b2Button.draw(canvas)
         icon2.draw(canvas)
 
@@ -386,7 +386,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
         // Set the circular background icon to launch the preferred input screen for sleep
 
-        b3Button.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity")
+        b3Button.setActivity("com.example.fatiguemonitor.presentation.Activity3")
 
 
         b3Button.draw(canvas)
@@ -420,7 +420,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             icon4.bounds.top.toFloat(), icon4.bounds.right.toFloat(),
             icon4.bounds.bottom.toFloat()
         )
-        b4Button.setActivity("com.example.fatiguemonitor.presentation.EnergySliderActivity")
+        b4Button.setActivity("com.example.fatiguemonitor.presentation.Activity4")
         b4Button.draw(canvas)
         icon4.draw(canvas)
 

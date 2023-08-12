@@ -4,8 +4,8 @@
     <string name="my_analog_name">Fatigue Monitor Watchface</string>
     <string name="background">background</string>
     <string name="test">TEST</string>
-    <string name="button1Text">button 1</string>
-    <string name="button2Text">button 2</string>
-    <string name="button3Text">button 3</string>
-    <string name="button4Text">button 4</string>
+    <string name="button1Text">Feelings</string>
+    <string name="button2Text">Sleep</string>
+    <string name="button3Text">Food</string>
+    <string name="button4Text">Medication</string>
 </resources>
