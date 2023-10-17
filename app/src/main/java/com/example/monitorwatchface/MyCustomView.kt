@@ -15,8 +15,8 @@ class MyCustomView(context: Context) : View(context) {
     private var mIsClickable = true
     private val mPaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var mIconRect = RectF(0f, 0f, 0f, 0f)
-    private var mPackageName = "com.example.fatiguemonitor"
-    private var mActivityName = "com.example.fatiguemonitor.presentation.EnergySeekBarActivity"
+    private var mPackageName = "com.example.esmartwatch"
+    private var mActivityName = "com.example.esmartwatch.presentation.MainActivity"
 
     init {
         mPaint.style = Paint.Style.FILL

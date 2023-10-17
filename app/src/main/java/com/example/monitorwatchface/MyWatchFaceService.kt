@@ -12,8 +12,11 @@ import android.support.wearable.watchface.CanvasWatchFaceService
 import android.view.*
 import android.widget.*
 import com.google.android.gms.wearable.*
+import java.lang.Math.cos
+import java.lang.Math.sin
 import java.text.DateFormat
 import java.text.DateFormat.getTimeInstance
+import java.text.SimpleDateFormat
 import java.util.*
 
 class MyWatchFaceService : CanvasWatchFaceService() {
@@ -38,7 +41,9 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     private lateinit var b2Text: String
     private lateinit var b3Text: String
     private lateinit var b4Text: String
+
     // Declare variables for user preferences
+    private var dayIndex = 0
     private var b1medium = 0
     private var b2medium = 0
     private var b3medium = 0
@@ -139,10 +144,30 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             setIcons(applicationContext)
 
             // Draw the background colour
-            canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
 
-            // Draw the current time in 12-hour clock format
-            drawTime(canvas, bounds)
+            if (hourbetween(19, 24)) {
+                val centerX = horizontalLength / 2f
+                val centerY = verticalLength / 2f
+                val customstrokeWidth = 10f // Adjust the stroke width as needed
+                val radius = Math.min(centerX, centerY) - customstrokeWidth // Adjust strokeWidth as needed
+
+                val paint = Paint().apply {
+                    color = Color.parseColor("#ffc269")
+                    style = Paint.Style.STROKE
+                    strokeWidth = customstrokeWidth
+                    isAntiAlias = true
+                }
+
+                canvas.drawCircle(centerX, centerY, radius, paint)
+            } else {
+                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+            }
+            if (hourbetween(18, 24)) {
+                drawChargeReminder(canvas,bounds)
+            }else{
+                // Draw the current time in 12-hour clock format
+                drawTime(canvas, bounds)
+            }
 
             // Draw the battery progress ring
             drawBatteryProgressRing(canvas, bounds)
@@ -160,12 +185,24 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             drawButton4Elements(canvas, bounds, button4View)
 
 
+
+
         }
+
+        private fun hourbetween(firstHour: Int, secondHour: Int): Boolean {
+            val calendar = java.util.Calendar.getInstance()
+            val currentHour = calendar.get(java.util.Calendar.HOUR_OF_DAY)
+            return currentHour in firstHour until secondHour
+        }
+
         @SuppressLint("Range")
         private fun preferencesContentResolver() {
-            val uri = Uri.parse("content://com.example.fatiguemonitor.provider")
+            val uri = Uri.parse("content://com.example.esmartwatch.provider")
             val cursor = contentResolver.query(uri, null, null, null, null)
             if (cursor != null && cursor.moveToFirst()) {
+                if (cursor.moveToNext()) {
+                    dayIndex = cursor.getInt(cursor.getColumnIndex("value"))
+                }
                 if (cursor.moveToNext()) {
                     b1medium = cursor.getInt(cursor.getColumnIndex("value"))
                 }
@@ -193,6 +230,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             }
             cursor?.close()
         }
+
         // Redraw watch face every minute
         override fun onTimeTick() {
             super.onTimeTick()
@@ -226,11 +264,52 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
         // Helper function to set sleep and mood icons according to current values
         private fun setIcons(context: Context) {
+            var hideA2 = false
+            var hideA3 = false
+            var hideA4 = false
 
+            if (dayIndex <= 1) {
+                hideA2 = true
+                hideA3 = true
+                hideA4 = true
+            } else if (dayIndex <= 3) {
+                hideA2 = !hourbetween(5,10)
+                hideA3 = true
+                hideA4 = !hourbetween(18,23)
+
+            } else if (dayIndex > 5) {
+
+                hideA2 = !hourbetween(5,10)
+                hideA3 = false
+                hideA4 = !hourbetween(18,23)
+            }
+
+
+//            println("hide a2: $hideA2, hide a3:$hideA3, hide a4:$hideA4")
             icon1 = context.getDrawable(R.drawable.activity_1_icon)!!
-            icon2 = context.getDrawable(R.drawable.activity_2_icon)!!
-            icon3 = context.getDrawable(R.drawable.activity_3_icon)!!
-            icon4 = context.getDrawable(R.drawable.activity_4_icon)!!
+
+            if (hideA2) {
+                icon2 = context.getDrawable(R.drawable.activity_2_icon_passive)!!
+                button2View.toggleClickable(false)
+            } else {
+                icon2 = context.getDrawable(R.drawable.activity_2_icon)!!
+                button2View.toggleClickable(true)
+            }
+            if (hideA3) {
+                icon3 = context.getDrawable(R.drawable.activity_3_icon_passive)!!
+                button3View.toggleClickable(false)
+            } else {
+                icon3 = context.getDrawable(R.drawable.activity_3_icon)!!
+                button3View.toggleClickable(true)
+            }
+            if (hideA4) {
+                icon4 = context.getDrawable(R.drawable.activity_4_icon_passive)!!
+                button4View.toggleClickable(false)
+            } else {
+                icon4 = context.getDrawable(R.drawable.activity_4_icon)!!
+                button4View.toggleClickable(true)
+            }
+
             b1Text = context.getString(R.string.button1Text)!!
             b2Text = context.getString(R.string.button2Text)!!
             b3Text = context.getString(R.string.button3Text)!!
@@ -238,19 +317,40 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
         }
     }
-    
+
     // Helper function to draw the current time in 12-hour clock format
     private fun drawTime(canvas: Canvas, bounds: Rect) {
-        val timeFormat = getTimeInstance(DateFormat.SHORT)
-        val timeString = timeFormat.format(currentTime.time)
-        val hourMinute = timeString.substringBefore(" ")
-        val amPm = timeString.substringAfter(" ").uppercase()
-        val amPmY =
-            bounds.exactCenterY() + mainTextPaint.descent() + resources.getDimension(R.dimen.text_padding)
-        canvas.drawText(hourMinute, bounds.exactCenterX(), bounds.exactCenterY(), mainTextPaint)
-        canvas.drawText(amPm, bounds.exactCenterX(), amPmY, mainTextPaint)
-    }
+        canvas.drawText("Day\n$dayIndex", bounds.exactCenterX(), bounds.exactCenterY(), mainTextPaint)
+//        val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault()) // Use 24-hour format
+//        val timeString = timeFormat.format(currentTime.time)
+//        val hourMinute = timeString
+//        val amPm = "" // No need for AM/PM in 24-hour format
+//        val amPmY = bounds.exactCenterY() + mainTextPaint.descent() + resources.getDimension(R.dimen.text_padding)
+//        canvas.drawText(hourMinute, bounds.exactCenterX(), bounds.exactCenterY(), mainTextPaint)
+//        canvas.drawText(amPm, bounds.exactCenterX(), amPmY, mainTextPaint)
 
+    }
+    private fun drawChargeReminder(canvas: Canvas, bounds: Rect) {
+        val customTextPaint = Paint(mainTextPaint)
+        customTextPaint.textSize = 25f
+        customTextPaint.color = Color.parseColor("#ffc269")
+        val chargeReminderText = "Please Charge Me Before Bed"
+        val chargeReminderX = bounds.exactCenterX()
+        val chargeReminderY = bounds.exactCenterY()
+        canvas.drawText(chargeReminderText, chargeReminderX, chargeReminderY, customTextPaint)
+
+        // Draw the time text with a smaller size underneath the charge reminder text
+//        val timeFormat = DateFormat.getTimeInstance(DateFormat.SHORT)
+//        val timeString = timeFormat.format(currentTime.time)
+//        val hourMinute = timeString.substringBefore(" ")
+//        val amPm = timeString.substringAfter(" ").uppercase()
+//        val timeTextSize = 20f // Adjust the size as needed
+//        val timeTextY = chargeReminderY + customTextPaint.descent() + resources.getDimension(R.dimen.text_padding)
+//        val timeTextPaint = Paint(mainTextPaint)
+//        timeTextPaint.textSize = timeTextSize
+//        canvas.drawText(hourMinute, chargeReminderX, timeTextY, timeTextPaint)
+//        canvas.drawText(amPm, chargeReminderX, timeTextY + timeTextPaint.descent()*4, timeTextPaint)
+    }
 
 
     // Helper function to draw the battery progress ring
@@ -263,13 +363,13 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         val iconWidth = (horizontalLength / iconSize)
         val iconHeight = (verticalLength / iconSize)
         val batteryX = bounds.exactCenterX()
-        val batteryY = bounds.exactCenterY()  + (iconHeight*1.5)
+        val batteryY = bounds.exactCenterY() + (iconHeight * 1.5)
         canvas.drawText(
             batteryCount, batteryX.toFloat(),
             batteryY.toFloat(), supportingTextPaint
         )
 
-        val circleRadius = (horizontalLength / (iconSize*4))
+        val circleRadius = (horizontalLength / (iconSize * 4))
         val circleX = batteryX
         val circleY = batteryY - (supportingTextPaint.textSize / 4)
         val circleRectF = RectF(
@@ -300,8 +400,8 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         val iconWidth = (horizontalLength / iconSize)
         val iconHeight = (verticalLength / iconSize)
 
-        val iconLeft = bounds.centerX() - iconWidth/2 - iconWidth
-        val iconTop = bounds.centerY()  - (iconHeight*1.5)
+        val iconLeft = bounds.centerX() - iconWidth / 2 - iconWidth
+        val iconTop = bounds.centerY() - (iconHeight * 1.5)
 
         icon1.setBounds(
             iconLeft.toInt(), iconTop.toInt(),
@@ -310,12 +410,12 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
         b1Button.setButtonPosition(
             icon1.bounds.left.toFloat(),
-            icon1.bounds.top.toFloat() , icon1.bounds.right.toFloat(),
+            icon1.bounds.top.toFloat(), icon1.bounds.right.toFloat(),
             icon1.bounds.bottom.toFloat()
         )
 
         // Set the circular background icon to launch the preferred input screen for mood
-        b1Button.setActivity("com.example.fatiguemonitor.presentation.Activity1Standard")
+        b1Button.setActivity("com.example.esmartwatch.presentation.Activity1")
 
         b1Button.draw(canvas)
         icon1.draw(canvas)
@@ -323,7 +423,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         // Draw the mood text
 
         val moodTextX = iconLeft + (iconWidth / 2)
-        val moodTextY = iconTop + iconHeight + (supportingTextPaint.textSize )
+        val moodTextY = iconTop + iconHeight + (supportingTextPaint.textSize)
         canvas.drawText(
             b1Text,
             moodTextX.toFloat(), moodTextY.toFloat(), supportingTextPaint
@@ -335,8 +435,8 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         // Draw the intensity icon mood and it's clickable circular background
         val iconWidth = (horizontalLength / iconSize)
         val iconHeight = (verticalLength / iconSize)
-        val iconLeft = bounds.centerX() - iconWidth/2 + iconWidth
-        val iconTop = bounds.centerY()  - (iconHeight*1.5)
+        val iconLeft = bounds.centerX() - iconWidth / 2 + iconWidth
+        val iconTop = bounds.centerY() - (iconHeight * 1.5)
         icon2.setBounds(
             iconLeft.toInt(), iconTop.toInt(),
             ((iconLeft + iconWidth).toInt()), ((iconTop + iconHeight).toInt())
@@ -349,14 +449,14 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         )
 
         // Set the intensity icon to launch the input screen for intensity
-        b2Button.setActivity("com.example.fatiguemonitor.presentation.Activity2Opt2")
+        b2Button.setActivity("com.example.esmartwatch.presentation.Activity2")
         b2Button.draw(canvas)
         icon2.draw(canvas)
 
         // Draw the mood text
 
         val intensityTextX = iconLeft + (iconWidth / 2)
-        val intensityTextY = iconTop + iconHeight + (supportingTextPaint.textSize )
+        val intensityTextY = iconTop + iconHeight + (supportingTextPaint.textSize)
         canvas.drawText(
             b2Text,
             intensityTextX.toFloat(), intensityTextY.toFloat(), supportingTextPaint
@@ -369,8 +469,8 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         val iconWidth = (horizontalLength / iconSize)
         val iconHeight = (verticalLength / iconSize)
 
-        val iconLeft = bounds.centerX() - (iconWidth/2) - iconWidth
-        val iconTop = bounds.centerY()  + (iconHeight*1.5) - iconHeight
+        val iconLeft = bounds.centerX() - (iconWidth / 2) - iconWidth
+        val iconTop = bounds.centerY() + (iconHeight * 1.5) - iconHeight
         icon3.setBounds(
             iconLeft.toInt(),
             iconTop.toInt(),
@@ -386,7 +486,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
         // Set the circular background icon to launch the preferred input screen for sleep
 
-        b3Button.setActivity("com.example.fatiguemonitor.presentation.Activity3")
+        b3Button.setActivity("com.example.esmartwatch.presentation.Activity3")
 
 
         b3Button.draw(canvas)
@@ -401,6 +501,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             sleepTextX.toFloat(), sleepTextY.toFloat(), supportingTextPaint
         )
     }
+
     // Helper function to draw elements related to food count
     private fun drawButton4Elements(canvas: Canvas, bounds: Rect, b4Button: MyCustomView) {
 
@@ -408,8 +509,8 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         // Draw the food count icon
         val iconWidth = (horizontalLength / iconSize)
         val iconHeight = (verticalLength / iconSize)
-        val iconLeft = bounds.centerX() - (iconWidth/2) + iconWidth
-        val iconTop = bounds.centerY()  + (iconHeight*1.5) - iconHeight
+        val iconLeft = bounds.centerX() - (iconWidth / 2) + iconWidth
+        val iconTop = bounds.centerY() + (iconHeight * 1.5) - iconHeight
 
         icon4.setBounds(
             iconLeft.toInt(), iconTop.toInt(),
@@ -420,7 +521,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             icon4.bounds.top.toFloat(), icon4.bounds.right.toFloat(),
             icon4.bounds.bottom.toFloat()
         )
-        b4Button.setActivity("com.example.fatiguemonitor.presentation.Activity4")
+        b4Button.setActivity("com.example.esmartwatch.presentation.Activity4")
         b4Button.draw(canvas)
         icon4.draw(canvas)
 
@@ -434,4 +535,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         )
 
     }
+
+
+
 }
