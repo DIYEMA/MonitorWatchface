@@ -150,7 +150,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
             // Draw the background colour
 
-            if (hourbetween(21, 24)) {
+            if (hourbetween(19, 24)) {
                 val centerX = horizontalLength / 2f
                 val centerY = verticalLength / 2f
                 val customstrokeWidth = 10f // Adjust the stroke width as needed
@@ -167,7 +167,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             } else {
                 canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
             }
-            if (hourbetween(20, 24)) {
+            if (hourbetween(18, 24)) {
                 drawChargeReminder(canvas,bounds)
             }else{
                 // Draw the current time in 12-hour clock format
@@ -306,7 +306,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
                 icon1 = context.getDrawable(R.drawable.activity_1_icon)!!
                 button1View.toggleClickable(true)
             }
-            if (!hourbetween(5,9)) {
+            if (!hourbetween(5,10)) {
                 icon2 = context.getDrawable(R.drawable.activity_2_icon_disabled)!!
                 button2View.toggleClickable(false)
             } else if (hideA2) {
@@ -430,7 +430,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         val moodTextX = iconLeft + (iconWidth / 2)
         val moodTextY = iconTop + iconHeight + (supportingTextPaint.textSize)
 
-        val button1TextColorHex = "#9DC284" // Example hexadecimal color value (red)
+        val button1TextColorHex = "#FFFFFF" // Example hexadecimal color value (red)
         val button1TextColor = Color.parseColor(button1TextColorHex)
         supportingTextPaint.color = button1TextColor
 
@@ -468,7 +468,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
         val intensityTextX = iconLeft + (iconWidth / 2)
         val intensityTextY = iconTop + iconHeight + (supportingTextPaint.textSize)
-        val button2TextColorHex = "#49497E" // Example hexadecimal color value (red)
+        val button2TextColorHex = "#FFFFFF" // Example hexadecimal color value (red)
         val button2TextColor = Color.parseColor(button2TextColorHex)
         supportingTextPaint.color = button2TextColor
 
@@ -513,7 +513,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
         val sleepTextX = iconLeft + (iconWidth / 2)
         val sleepTextY = iconTop - (supportingTextPaint.textSize / 4)
-        val button3TextColorHex = "#5686E1" // Example hexadecimal color value (red)
+        val button3TextColorHex = "#FFFFFF" // Example hexadecimal color value (red)
         val button3TextColor = Color.parseColor(button3TextColorHex)
         supportingTextPaint.color = button3TextColor
 
@@ -551,7 +551,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
         val foodCountTextX = iconLeft + (iconWidth / 2)
         val foodCountTextY = iconTop - (supportingTextPaint.textSize / 4)
-        val button4TextColorHex = "#97536E" // Example hexadecimal color value (red)
+        val button4TextColorHex = "#FFFFFF" // Example hexadecimal color value (red)
         val button4TextColor = Color.parseColor(button4TextColorHex)
         supportingTextPaint.color = button4TextColor
 
