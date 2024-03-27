@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 
@@ -52,21 +53,14 @@ class MyCustomView(context: Context) : View(context) {
 
     // Custom override to launch preferred input screen once the circular background icon is touched
     override fun onTouchEvent(event: MotionEvent): Boolean {
-//        val handler = Handler()
-        when (event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-//                handler.postDelayed({
-                    if (event.actionMasked == MotionEvent.ACTION_DOWN && mIsClickable) {
-                        if (mIconRect.contains(event.x, event.y)) {
-                            val intent = Intent().apply {
-                                setClassName(mPackageName, mActivityName)
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                            }
-                            context.startActivity(intent)
-                        }
-                    }
-//                }, 100)
+        if (mIsClickable && event.action == MotionEvent.ACTION_DOWN && mIconRect.contains(event.x, event.y)) {
+            val intent = Intent().apply {
+                setClassName(mPackageName, mActivityName)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }
+
+            context.startActivity(intent)
+            return true  // Consume the event
         }
         return super.onTouchEvent(event)
     }

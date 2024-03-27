@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">MonitorWatchface</string>
     <string name="message">Watch face tapped</string>
-    <string name="my_analog_name">Fatigue Monitor Watchface</string>
+    <string name="my_analog_name">A Watch Buddy</string>
     <string name="background">background</string>
     <string name="test">TEST</string>
     <string name="button1Text">Feelings</string>
