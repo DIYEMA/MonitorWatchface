@@ -10,7 +10,7 @@ import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 
-class MyCustomView(context: Context) : View(context) {
+class IconView(context: Context) : View(context) {
 
     // Declare and initialise variables
     private var mIsClickable = true

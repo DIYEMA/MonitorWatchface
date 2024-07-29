@@ -32,16 +32,21 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     private var currentTime = Calendar.getInstance()
 
 
-    private lateinit var b4Icon: Drawable
+
     private lateinit var icon1: Drawable
     private lateinit var icon2: Drawable
     private lateinit var icon3: Drawable
     private lateinit var icon4: Drawable
+    private lateinit var iconSetup0: Drawable
+    private lateinit var iconSetup1: Drawable
+
 
     private lateinit var b1Text: String
     private lateinit var b2Text: String
     private lateinit var b3Text: String
     private lateinit var b4Text: String
+    private lateinit var s0Text: String
+    private lateinit var s1Text: String
 
     // Declare variables for user preferences
     private var dayIndex = 0
@@ -51,8 +56,12 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     private var act3bval = 0
     private var act4val = 0
     private var steps = 0
+    private var ifFirstDay = 0
 
     private var iconSize = 4
+
+    private var hasDisplayedHi = false
+    private var displaySkip = false
 
     // Declare variables to collect screen size
     private var verticalLength = 0
@@ -98,25 +107,31 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
     private inner class MyEngine : Engine() {
 
-        // Declare circular background
-        private lateinit var button1View: MyCustomView
-        private lateinit var button2View: MyCustomView
-        private lateinit var button3View: MyCustomView
-        private lateinit var button4View: MyCustomView
+        private lateinit var button1View: IconView
+        private lateinit var button2View: IconView
+        private lateinit var button3View: IconView
+        private lateinit var button4View: IconView
+        private lateinit var setup0View: IconView
+        private lateinit var setup1View: IconView
 
         override fun onCreate(surfaceHolder: SurfaceHolder) {
             super.onCreate(surfaceHolder)
-            button1View = MyCustomView(this@MyWatchFaceService)
-            button2View = MyCustomView(this@MyWatchFaceService)
-            button3View = MyCustomView(this@MyWatchFaceService)
-            button4View = MyCustomView(this@MyWatchFaceService)
+            button1View = IconView(this@MyWatchFaceService)
+            button2View = IconView(this@MyWatchFaceService)
+            button3View = IconView(this@MyWatchFaceService)
+            button4View = IconView(this@MyWatchFaceService)
+            setup0View = IconView(this@MyWatchFaceService)
+            setup1View = IconView(this@MyWatchFaceService)
 
             button1View.setActivity("com.example.esmartwatch.presentation.Activity1emojis")
             button2View.setActivity("com.example.esmartwatch.presentation.Activity2")
             button3View.setActivity("com.example.esmartwatch.presentation.Activity3time")
             button4View.setActivity("com.example.esmartwatch.presentation.Activity4")
+            setup0View.setActivity("com.example.esmartwatch.presentation.ActivityPractice")
+            setup1View.setActivity("com.example.esmartwatch.presentation.ActivityQuickStart")
 
             setTouchEventsEnabled(true)
+
         }
 
         // Remove circular background click-ability on destroy
@@ -126,6 +141,8 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             button2View.toggleClickable(false)
             button3View.toggleClickable(false)
             button4View.toggleClickable(false)
+            setup0View.toggleClickable(false)
+            setup1View.toggleClickable(false)
         }
 
         // Upon circular background touch, launch input screens
@@ -135,61 +152,87 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             button2View.onTouchEvent(event)
             button3View.onTouchEvent(event)
             button4View.onTouchEvent(event)
+            setup0View.onTouchEvent(event)
+            setup1View.onTouchEvent(event)
         }
-
+        private fun clearCanvas(canvas: Canvas, backgroundColor: Int) {
+            canvas.drawColor(backgroundColor)
+        }
         override fun onDraw(canvas: Canvas, bounds: Rect) {
             super.onDraw(canvas, bounds)
+            preferencesContentResolver()
             // Collect screen size information for dynamic element sizing
             verticalLength = bounds.bottom - bounds.top
             horizontalLength = bounds.right - bounds.left
+            val centerX = horizontalLength / 2f
+            val centerY = verticalLength / 2f
 
-            preferencesContentResolver()
-
-            // Set mood, intensity and sleep icons according to current values
+            println("dayIndex: $dayIndex,$ifFirstDay")
             setIcons(applicationContext)
+            clearCanvas(canvas, Color.BLACK)
+            if(dayIndex == -2 && ifFirstDay == 0){
 
-            // Draw the background colour
 
-            if (hourbetween(19, 24)) {
-                val centerX = horizontalLength / 2f
-                val centerY = verticalLength / 2f
-                val customstrokeWidth = 10f // Adjust the stroke width as needed
-                val radius = Math.min(centerX, centerY) - customstrokeWidth // Adjust strokeWidth as needed
 
-                val paint = Paint().apply {
-                    color = Color.parseColor("#ffc269")
-                    style = Paint.Style.STROKE
-                    strokeWidth = customstrokeWidth
-                    isAntiAlias = true
+                drawFirstTimeScreen(canvas, bounds, setup0View, setup1View)
+                button1View.toggleClickable(false)
+                button2View.toggleClickable(false)
+                button3View.toggleClickable(false)
+                button4View.toggleClickable(false)
+                setup0View.toggleClickable(true)
+                setup1View.toggleClickable(true)
+                mainTextPaint.apply { color = Color.WHITE }
+
+
+            } else {
+
+
+                // Set mood, intensity and sleep icons according to current values
+
+
+                // Draw the background colour
+
+                if (hourbetween(19, 24)) {
+
+                    val customstrokeWidth = 10f // Adjust the stroke width as needed
+                    val radius = Math.min(
+                        centerX,
+                        centerY
+                    ) - customstrokeWidth // Adjust strokeWidth as needed
+
+                    val paint = Paint().apply {
+                        color = Color.parseColor("#ffc269")
+                        style = Paint.Style.STROKE
+                        strokeWidth = customstrokeWidth
+                        isAntiAlias = true
+                    }
+
+                    canvas.drawCircle(centerX, centerY, radius, paint)
+                } else {
+                    canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+                }
+                if (hourbetween(18, 24)) {
+                    drawChargeReminder(canvas, bounds)
+                } else {
+                    // Draw the current time in 12-hour clock format
+                    drawTime(canvas, centerX, centerY)
                 }
 
-                canvas.drawCircle(centerX, centerY, radius, paint)
-            } else {
-                canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+                // Draw the battery progress ring
+                drawBatteryProgressRing(canvas, bounds)
+
+                // Draw elements related to mood
+                drawButton1Elements(canvas, bounds, button1View)
+
+                // Draw elements related to intensity
+                drawButton2Elements(canvas, bounds, button2View)
+
+                // Draw elements related to sleep
+                drawButton3Elements(canvas, bounds, button3View)
+
+                // Draw elements related to food count
+                drawButton4Elements(canvas, bounds, button4View)
             }
-            if (hourbetween(18, 24)) {
-                drawChargeReminder(canvas,bounds)
-            }else{
-                // Draw the current time in 12-hour clock format
-                drawTime(canvas, bounds.exactCenterX(), bounds.exactCenterY())
-            }
-
-            // Draw the battery progress ring
-            drawBatteryProgressRing(canvas, bounds)
-
-            // Draw elements related to mood
-            drawButton1Elements(canvas, bounds, button1View)
-
-            // Draw elements related to intensity
-            drawButton2Elements(canvas, bounds, button2View)
-
-            // Draw elements related to sleep
-            drawButton3Elements(canvas, bounds, button3View)
-
-            // Draw elements related to food count
-            drawButton4Elements(canvas, bounds, button4View)
-
-
 
 
         }
@@ -225,6 +268,9 @@ class MyWatchFaceService : CanvasWatchFaceService() {
                 }
                 if (cursor.moveToNext()) {
                     steps = cursor.getInt(cursor.getColumnIndex("value"))
+                }
+                if (cursor.moveToNext()) {
+                    ifFirstDay = cursor.getInt(cursor.getColumnIndex("value"))
                 }
             }
             cursor?.close()
@@ -295,6 +341,8 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 //            hideA3 = false
 //            hideA4 = false
 //            }
+            iconSetup0 = context.getDrawable(R.drawable.day0)!!
+            iconSetup1 = context.getDrawable(R.drawable.day1)!!
 
 
 //            println("hide a2: $hideA2, hide a3:$hideA3, hide a4:$hideA4")
@@ -341,7 +389,37 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
     // Helper function to draw the current time in 12-hour clock format
     private fun drawTime(canvas: Canvas, xlocation: Float, ylocation: Float) {
-        canvas.drawText("Day\n$dayIndex", xlocation, ylocation, mainTextPaint)
+        val calendar = Calendar.getInstance()
+        val timeFormat = SimpleDateFormat("hh:mm a")
+        val timeText = timeFormat.format(calendar.time)
+
+        var displayDayIndex = dayIndex + 1
+        if(dayIndex==-2){
+            displayDayIndex = 0
+        }
+        // Define the day text
+        val dayText = "Day $displayDayIndex"
+
+        // Define paint objects for different text sizes
+
+
+        // Measure the time text to center it
+        val timeBounds = Rect()
+        mainTextPaint.getTextBounds(timeText, 0, timeText.length, timeBounds)
+        val timeX = xlocation
+        val timeY = ylocation+ timeBounds.height()/2
+
+        // Draw the time text
+        canvas.drawText(timeText, timeX, timeY, mainTextPaint)
+
+        // Measure the day text to center it
+        val dayBounds = Rect()
+        supportingTextPaint.getTextBounds(dayText, 0, dayText.length, dayBounds)
+        val dayX = xlocation
+        val dayY = timeY + timeBounds.height() + 10 // Adjust the 10 value for desired spacing
+
+        // Draw the day text underneath
+        canvas.drawText(dayText, dayX, dayY, supportingTextPaint)
 
     }
     private fun drawChargeReminder(canvas: Canvas, bounds: Rect) {
@@ -399,8 +477,86 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         canvas.drawText(batteryText, circleX.toFloat(), batteryTextY.toFloat(), supportingTextPaint)
     }
 
-    // Helper function to draw elements related to mood
-    private fun drawButton1Elements(canvas: Canvas, bounds: Rect, b1Button: MyCustomView) {
+    private fun drawMultiLineText(
+        canvas: Canvas,
+        text: String,
+        x: Float,
+        y: Float,
+        mainPaint: Paint,
+        supportingPaint: Paint,
+        boldLines: Int
+    ) {
+        // Split the text into lines based on newlines
+        val lines = text.split("\n")
+        fun getLineHeight(paint: Paint): Float {
+            val fontMetrics = paint.fontMetrics
+            return fontMetrics.descent - fontMetrics.ascent
+        }
+
+        var currentY = y - (getLineHeight(mainPaint) * (lines.size - 1)) / 2
+
+        // Draw each line of text with appropriate Paint
+        for (i in lines.indices) {
+            val line = lines[i]
+            val paint = if (i < boldLines) mainPaint else supportingPaint
+            val lineHeight = getLineHeight(paint)
+            canvas.drawText(line, x, currentY, paint)
+            currentY += lineHeight
+        }
+    }
+    private fun drawFirstTimeScreen(canvas: Canvas, bounds: Rect, setup0View: IconView, setup1View: IconView) {
+        val centerX = horizontalLength / 2f
+        val centerY = verticalLength / 2f
+        val welcomeMessage = "Welcome to the\nWatch Buddy Study!\nYou can now pick if you'd prefer to have" +
+                "\na practice day, Day 0. Or you can choose\nto get straight into collecting data for\nthe study, Day 1."
+        drawMultiLineText(canvas, welcomeMessage, centerX, centerY, mainTextPaint, supportingTextPaint, 2)
+
+        // Draw the mood icon and its clickable circular background
+        val iconWidth = (horizontalLength / iconSize)
+        val iconHeight = (verticalLength / iconSize)
+
+        // Position icons in the lower half of the screen
+        val iconVerticalOffset = verticalLength * 0.75f // Position at 75% of the vertical length
+
+        val iconLeft0 = bounds.left + iconWidth / 2
+        val iconTop0 = iconVerticalOffset - iconHeight / 2
+
+        val iconLeft1 = bounds.right - iconWidth - iconWidth / 2
+        val iconTop1 = iconVerticalOffset - iconHeight / 2
+
+        iconSetup0.setBounds(
+            iconLeft0.toInt(), iconTop0.toInt(),
+            (iconLeft0 + iconWidth).toInt(), (iconTop0 + iconHeight).toInt()
+        )
+
+        iconSetup1.setBounds(
+            iconLeft1.toInt(), iconTop1.toInt(),
+            (iconLeft1 + iconWidth).toInt(), (iconTop1 + iconHeight).toInt()
+        )
+
+        setup0View.setButtonPosition(
+            iconSetup0.bounds.left.toFloat(),
+            iconSetup0.bounds.top.toFloat(), iconSetup0.bounds.right.toFloat(),
+            iconSetup0.bounds.bottom.toFloat()
+        )
+        setup1View.setButtonPosition(
+            iconSetup1.bounds.left.toFloat(),
+            iconSetup1.bounds.top.toFloat(), iconSetup1.bounds.right.toFloat(),
+            iconSetup1.bounds.bottom.toFloat()
+        )
+
+        // Draw the icons
+        iconSetup0.draw(canvas)
+        setup0View.draw(canvas)
+
+        iconSetup1.draw(canvas)
+        setup1View.draw(canvas)
+    }
+
+
+    private fun drawButton1Elements(canvas: Canvas, bounds: Rect, b1Button: IconView) {
+
+
         // Draw the mood icon and it's clickable circular background
         val iconWidth = (horizontalLength / iconSize)
         val iconHeight = (verticalLength / iconSize)
@@ -442,7 +598,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     }
 
     // Helper function to draw elements related to mood
-    private fun drawButton2Elements(canvas: Canvas, bounds: Rect, b2Button: MyCustomView) {
+    private fun drawButton2Elements(canvas: Canvas, bounds: Rect, b2Button: IconView) {
         // Draw the intensity icon mood and it's clickable circular background
         val iconWidth = (horizontalLength / iconSize)
         val iconHeight = (verticalLength / iconSize)
@@ -481,7 +637,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     }
 
     // Helper function to draw elements related to sleep
-    private fun drawButton3Elements(canvas: Canvas, bounds: Rect, b3Button: MyCustomView) {
+    private fun drawButton3Elements(canvas: Canvas, bounds: Rect, b3Button: IconView) {
         // Draw the sleep icon and it's clickable circular background
         val iconWidth = (horizontalLength / iconSize)
         val iconHeight = (verticalLength / iconSize)
@@ -525,7 +681,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
     }
 
     // Helper function to draw elements related to food count
-    private fun drawButton4Elements(canvas: Canvas, bounds: Rect, b4Button: MyCustomView) {
+    private fun drawButton4Elements(canvas: Canvas, bounds: Rect, b4Button: IconView) {
 
 
         // Draw the food count icon
