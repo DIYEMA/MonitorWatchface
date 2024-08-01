@@ -59,7 +59,12 @@ class IconView(context: Context) : View(context) {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }
 
-            context.startActivity(intent)
+            try {
+                context.startActivity(intent)
+                Log.d("TouchEvent", "Activity1 started successfully")
+            } catch (e: Exception) {
+                Log.e("TouchEvent", "Failed to start Activity1", e)
+            }
             return true  // Consume the event
         }
         return super.onTouchEvent(event)
