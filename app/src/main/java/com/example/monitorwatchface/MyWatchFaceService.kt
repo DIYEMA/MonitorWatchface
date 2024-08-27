@@ -28,7 +28,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
     private lateinit var batteryBackgroundPaint: Paint
     private lateinit var batteryForegroundPaint: Paint
-    private val backgroundColour = Color.parseColor("#00FFFFFF")
+    private val backgroundColour = Color.parseColor("#7545C2")
     private var currentTime = Calendar.getInstance()
 
 
@@ -123,7 +123,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             setup0View = IconView(this@MyWatchFaceService)
             setup1View = IconView(this@MyWatchFaceService)
 
-            button1View.setActivity("com.example.esmartwatch.presentation.Activity1")
+            button1View.setActivity("com.example.esmartwatch.presentation.Activity1emojis")
             button2View.setActivity("com.example.esmartwatch.presentation.Activity2")
             button3View.setActivity("com.example.esmartwatch.presentation.Activity3time")
             button4View.setActivity("com.example.esmartwatch.presentation.Activity4")
@@ -156,6 +156,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             setup1View.onTouchEvent(event)
         }
         private fun clearCanvas(canvas: Canvas, backgroundColor: Int) {
+//            Log.d("WatchFace", "Clearing canvas with colour: $backgroundColor")
             canvas.drawColor(backgroundColor)
         }
         override fun onDraw(canvas: Canvas, bounds: Rect) {
@@ -169,7 +170,8 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
 
             setIcons(applicationContext)
-            clearCanvas(canvas, Color.BLACK)
+            clearCanvas(canvas, backgroundColour)
+
             if(dayIndex == -2 && ifFirstDay == 0){
 
 
@@ -211,6 +213,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
                     canvas.drawCircle(centerX, centerY, radius, paint)
                 } else {
                     canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+                    clearCanvas(canvas, backgroundColour)
                 }
                 if (hourbetween(18, 24)) {
                     drawChargeReminder(canvas, bounds)
@@ -234,7 +237,6 @@ class MyWatchFaceService : CanvasWatchFaceService() {
                 // Draw elements related to food count
                 drawButton4Elements(canvas, bounds, button4View)
             }
-
 
         }
 
@@ -314,7 +316,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             var hideA2 = false
             var hideA3 = false
             var hideA4 = false
-            println("All vals, mood, sleep, food, meds $act1val, $act2val, $act3val, $act3bval, $act4val, $steps, $ifFirstDay")
+//            println("All vals, mood, sleep, food, meds $act1val, $act2val, $act3val, $act3bval, $act4val, $steps, $ifFirstDay")
             if(act1val!=0){
                 hideA1 = true
             }
