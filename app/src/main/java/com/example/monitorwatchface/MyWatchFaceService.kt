@@ -28,7 +28,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
     private lateinit var batteryBackgroundPaint: Paint
     private lateinit var batteryForegroundPaint: Paint
-    private val backgroundColour = Color.parseColor("#7545C2")
+    private val backgroundColour = Color.parseColor("#788CF6")
     private var currentTime = Calendar.getInstance()
 
 
@@ -125,8 +125,8 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
             button1View.setActivity("com.example.esmartwatch.presentation.Activity1emojis")
             button2View.setActivity("com.example.esmartwatch.presentation.Activity2")
-            button3View.setActivity("com.example.esmartwatch.presentation.Activity3time")
-            button4View.setActivity("com.example.esmartwatch.presentation.Activity4")
+            button3View.setActivity("com.example.esmartwatch.presentation.Activity3")
+            button4View.setActivity("com.example.esmartwatch.presentation.Activity4scale")
             setup0View.setActivity("com.example.esmartwatch.presentation.ActivityPractice")
             setup1View.setActivity("com.example.esmartwatch.presentation.ActivityQuickStart")
 
@@ -326,7 +326,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
             if (act3val!=0 && act3bval!=0){
                 hideA3 = true
             }
-            if (act4val==2 ){
+            if (act4val!=0 ){
                 hideA4 = true
             }
 //            if (dayIndex <= 1) {
