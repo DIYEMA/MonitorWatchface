@@ -28,7 +28,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
     private lateinit var batteryBackgroundPaint: Paint
     private lateinit var batteryForegroundPaint: Paint
-    private val backgroundColour = Color.parseColor("#788CF6")
+    private val backgroundColour = Color.parseColor("#32CC9E")
     private var currentTime = Calendar.getInstance()
 
 
@@ -94,7 +94,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
         }
 
         batteryForegroundPaint = Paint().apply {
-            color = Color.parseColor("#2196F3")
+            color = Color.parseColor("#32CC9E")
             strokeWidth = resources.getDimension(R.dimen.progress_width) / 2
             style = Paint.Style.STROKE
             strokeCap = Paint.Cap.ROUND
@@ -125,7 +125,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
             button1View.setActivity("com.example.esmartwatch.presentation.Activity1emojis")
             button2View.setActivity("com.example.esmartwatch.presentation.Activity2")
-            button3View.setActivity("com.example.esmartwatch.presentation.Activity3")
+            button3View.setActivity("com.example.esmartwatch.presentation.Activity3time")
             button4View.setActivity("com.example.esmartwatch.presentation.Activity4scale")
             setup0View.setActivity("com.example.esmartwatch.presentation.ActivityPractice")
             setup1View.setActivity("com.example.esmartwatch.presentation.ActivityQuickStart")
