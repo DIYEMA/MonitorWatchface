@@ -28,7 +28,7 @@ class MyWatchFaceService : CanvasWatchFaceService() {
 
     private lateinit var batteryBackgroundPaint: Paint
     private lateinit var batteryForegroundPaint: Paint
-    private val backgroundColour = Color.parseColor("#EAA338")
+    private val backgroundColour = Color.parseColor("#31945F")
     private var currentTime = Calendar.getInstance()
 
 
